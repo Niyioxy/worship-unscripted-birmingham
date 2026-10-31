@@ -1,0 +1,3 @@
+import type { Metadata } from "next";import "./globals.css";
+export const metadata:Metadata={title:"Worship Unscripted Birmingham | No Script. Just His Presence.",description:"An intimate, interdenominational, Christ-centred worship movement in Birmingham. Join us for Saturday evening studio worship, prayer and fellowship.",openGraph:{title:"Worship Unscripted Birmingham",description:"One City. One Sound. One Encounter.",type:"website"}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
