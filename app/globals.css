@@ -38,3 +38,12 @@
 @keyframes successPop{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
 }
 @media(prefers-reduced-motion:reduce){.reading-progress{display:none}.motion-reveal{opacity:1!important;transform:none!important;filter:none!important}.experience-card:hover,.registration-choice:hover{transform:none!important}}
+
+
+/* HarvestFlow production credit */
+.powered-by{display:flex;align-items:center;justify-content:flex-start;gap:22px;border-top:1px solid #29312b;padding:28px 0 33px}
+.powered-by>span,.registration-partner>span{font:700 10px 'Manrope',sans-serif;letter-spacing:.2em;color:#bca782}
+.powered-by img{width:185px;height:auto;display:block}
+.registration-partner{display:flex;align-items:center;gap:16px;margin-top:36px;padding-top:22px;border-top:1px solid #536057}
+.registration-partner img{width:175px;height:auto;display:block}
+@media(max-width:600px){.powered-by,.registration-partner{flex-wrap:wrap;gap:12px}.powered-by img{width:168px}.registration-partner img{width:165px}}
