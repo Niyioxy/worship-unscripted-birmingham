@@ -141,3 +141,13 @@ html{scroll-padding-top:20px}
 .moment-photo{position:absolute;inset:0;background-size:cover;background-position:center 32%;filter:saturate(.75);z-index:-1}
 .moment-visual .moment-orbit,.moment-visual .moment-symbol{opacity:.16}
 .moment-visual-label{z-index:2}
+
+/* Gentle cinematic motion for the selected hero photograph */
+@media(prefers-reduced-motion:no-preference){
+.hero-reimagined .hero-photo{animation:worshipHeroDrift 24s ease-in-out infinite alternate;will-change:transform}
+@keyframes worshipHeroDrift{
+0%{transform:scale(1.025) translate3d(0,0,0)}
+100%{transform:scale(1.115) translate3d(-1.5%,.7%,0)}
+}
+}
+@media(prefers-reduced-motion:reduce){.hero-reimagined .hero-photo{animation:none!important;transform:none!important}}
