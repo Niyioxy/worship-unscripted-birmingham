@@ -129,3 +129,9 @@ html{scroll-padding-top:20px}
 .experience-facts p{font-size:12px;color:#aebbad;margin-top:9px;line-height:1.6}
 @media(max-width:900px){.experience-feature{grid-template-columns:1fr}.experience-feature-photo{min-height:460px}.experience-feature-details{gap:25px}.experience-facts>div{padding:26px 20px}}
 @media(max-width:650px){.experience-reimagined .section-heading{align-items:flex-start}.experience-feature{margin-top:40px}.experience-feature-photo{min-height:410px;padding:26px}.experience-photo-label{left:26px;top:27px}.experience-photo-quote{font-size:49px}.experience-feature-details{padding:32px 25px}.experience-facts{grid-template-columns:1fr}.experience-facts>div{border-right:0;border-bottom:1px solid #465248;padding:26px}.experience-facts>div:last-child{border-bottom:0}.experience-facts svg{margin-bottom:12px}}
+
+/* Clean up distracting labels and tighten hero hierarchy */
+.hero-reimagined .hero-overline{margin:0 0 18px;color:#e1c398;font-size:11px;letter-spacing:.19em}
+.hero-reimagined h1{margin-top:0}
+.experience-photo-quote{margin-bottom:0}
+@media(max-width:720px){.hero-reimagined .hero-overline{margin-bottom:18px;font-size:10px;letter-spacing:.12em}}
