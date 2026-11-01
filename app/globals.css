@@ -135,3 +135,9 @@ html{scroll-padding-top:20px}
 .hero-reimagined h1{margin-top:0}
 .experience-photo-quote{margin-bottom:0}
 @media(max-width:720px){.hero-reimagined .hero-overline{margin-bottom:18px;font-size:10px;letter-spacing:.12em}}
+
+/* Selected worship imagery: make the moment photographic rather than abstract */
+.moment-visual{isolation:isolate}
+.moment-photo{position:absolute;inset:0;background-size:cover;background-position:center 32%;filter:saturate(.75);z-index:-1}
+.moment-visual .moment-orbit,.moment-visual .moment-symbol{opacity:.16}
+.moment-visual-label{z-index:2}
