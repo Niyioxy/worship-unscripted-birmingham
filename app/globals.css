@@ -245,3 +245,14 @@ html{scroll-padding-top:20px}
 .registration-consent a,.registration-footnote a{color:#9a7542;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:1180px){.inner-menu{display:block}.inner-links{display:none;position:absolute;top:90px;left:0;right:0;background:#10251c;padding:24px;flex-direction:column;align-items:stretch;gap:20px;box-shadow:0 20px 35px rgba(0,0,0,.2)}.inner-links.active{display:flex}}
 @media(max-width:700px){.inner-links{top:75px}.inner-contact-cards{grid-template-columns:1fr}.inner-event-card{padding:24px}}
+
+/* Shared brand identity: match homepage logo and display HarvestFlow artwork on every interior page. */
+.inner-header .inner-brand.logo{display:flex;align-items:center;gap:13px;color:#fff;letter-spacing:normal;font-weight:normal}
+.inner-header .inner-brand .logo-words{font:500 11px/1.25 'Manrope',sans-serif;letter-spacing:.17em}
+.inner-header .inner-brand .logo-words b{font-weight:800}
+.inner-header .inner-brand .logo-words small{display:block;font-size:9px;letter-spacing:.2em;margin-top:4px}
+.inner-powered-by{display:flex;align-items:center;gap:12px}
+.inner-powered-by>span{font-size:9px;letter-spacing:.13em;color:#c6b69a}
+.inner-powered-by a{display:inline-flex;align-items:center}
+.inner-powered-by img{display:block;max-width:150px;height:auto;max-height:47px;object-fit:contain}
+@media(max-width:700px){.inner-powered-by{flex-direction:column;gap:4px}}
