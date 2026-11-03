@@ -151,3 +151,40 @@ html{scroll-padding-top:20px}
 }
 }
 @media(prefers-reduced-motion:reduce){.hero-reimagined .hero-photo{animation:none!important;transform:none!important}}
+
+/* Worship Unscripted motion system: restrained, accessible and GPU-friendly */
+:root{--parallax-offset:0px}
+.ambient-canvas{position:absolute;top:0;left:0;width:100%;height:min(920px,100svh);z-index:2;pointer-events:none;opacity:.7}
+.hero-reimagined .hero-photo{background-position:center 37%;transform-origin:center center}
+.hero-reimagined .hero-editorial,.hero-reimagined .hero-side-note,.hero-reimagined .hero-footer{position:relative;z-index:3}
+.hero-loading .hero-photo{opacity:.15}
+.hero-loading:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,#0c1713 20%,#1c2922 42%,#0c1713 65%);background-size:200% 100%;animation:wuSkeleton 1.8s ease-in-out infinite}
+.hero-ready .hero-photo{opacity:1;transition:opacity .9s ease}
+@keyframes wuSkeleton{to{background-position-x:-200%}}
+.kinetic-headline>span,.kinetic-headline>em>span{display:block}
+.kinetic-headline>em{display:block}
+@media(prefers-reduced-motion:no-preference){
+ .kinetic-headline>span,.kinetic-headline>em>span{animation:wuWordRise 1s both cubic-bezier(.18,.72,.22,1)}
+ .kinetic-headline>span:nth-child(2){animation-delay:.14s}
+ .kinetic-headline>em>span:nth-child(1){animation-delay:.27s}
+ .kinetic-headline>em>span:nth-child(2){animation-delay:.4s}
+ .hero-overline{animation:wuWordRise .7s both .08s}
+ .hero-copy,.hero-buttons,.hero-trust{animation:wuWordRise .85s both .48s}
+ .hero-reimagined .hero-photo{translate:0 var(--parallax-offset)}
+ .motion-reveal{opacity:0;transform:translateY(25px);transition:opacity .75s ease,transform .85s cubic-bezier(.2,.75,.2,1);transition-delay:var(--reveal-delay,0ms)}
+ .motion-reveal.motion-visible{opacity:1;transform:translateY(0)}
+ .gold-button,.nav-cta,.inline-link,.hero-secondary,.moment-tab,.value-row,.registration-back,.welcome-strip a,.experience-feature-details>a{transition:transform .25s ease,background-color .25s ease,color .25s ease,box-shadow .25s ease}
+ .gold-button:hover,.nav-cta:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+ .gold-button:active,.nav-cta:active,.moment-tab:active{transform:scale(.98)}
+ .inline-link:hover,.hero-secondary:hover,.welcome-strip a:hover{transform:translateX(4px)}
+ .value-row:hover{transform:translateX(7px)}
+ .moment-stage,.vision-art,.convener-portrait{transform:perspective(1200px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transition:transform .32s ease;transform-style:preserve-3d}
+ .moment-photo{transition:filter .6s ease,scale .9s ease}
+ .moment-stage:hover .moment-photo{scale:1.035}
+ .moment-tab.selected svg{transform:rotate(45deg);transition:transform .35s ease}
+ .route-transition{position:fixed;inset:0;background:#101d17;z-index:999;pointer-events:none;opacity:0;transform:translateY(-100%);transition:opacity .45s ease,transform .45s ease}
+ .route-transition-loading{opacity:.13;transform:translateY(0)}
+ @keyframes wuWordRise{from{opacity:0;transform:translateY(25px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+}
+@media(max-width:767px){.ambient-canvas{opacity:.32}.moment-stage,.vision-art,.convener-portrait{transform:none!important}.hero-reimagined .hero-photo{translate:none!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.hero-loading:before,.kinetic-headline>span,.kinetic-headline>em>span,.hero-overline,.hero-copy,.hero-buttons,.hero-trust{animation:none!important}.motion-reveal{opacity:1!important;transform:none!important;transition:none!important}.route-transition{display:none}.ambient-canvas{display:none}.hero-reimagined .hero-photo{translate:none!important}.moment-stage,.vision-art,.convener-portrait{transform:none!important}}
