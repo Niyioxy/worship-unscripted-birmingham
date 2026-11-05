@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowLeft, LockKeyhole, RefreshCw, Search, Users, Music2, HandHeart, ShieldCheck, LogOut } from "lucide-react";
 
@@ -10,6 +10,11 @@ type Result = {ok:true;summary:Summary;records:RecordRow[];page:number;limit:num
 
 export default function AdminDashboard(){
   const [secret,setSecret]=useState("");
+  const [password,setPassword]=useState("");
+  const [setupRequired,setSetupRequired]=useState(false);
+  const [setupLoaded,setSetupLoaded]=useState(false);
+  const email="adeniyi.tosin@harvestflows.com";
+  useEffect(()=>{void fetch("/api/internal/admin/credentials",{cache:"no-store"}).then(async r=>{const j=await r.json();if(r.ok)setSetupRequired(!!j.setupRequired);else setError(j.error||"Unable to check account setup");}).catch(()=>setError("Unable to check account setup")).finally(()=>setSetupLoaded(true));void fetch("/api/internal/admin/session",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j.authenticated)void load("all",1)}).catch(()=>{});},[]);
 
   const [data,setData]=useState<Result|null>(null);
   const [filter,setFilter]=useState<Interest>("all");
@@ -33,8 +38,8 @@ export default function AdminDashboard(){
     }catch(e){setError(e instanceof Error?e.message:"Unable to load registrations.");setData(null)}
     finally{setBusy(false)}
   }
-  async function logout(){await fetch("/api/internal/admin/session",{method:"DELETE",credentials:"same-origin"});setSecret("");setData(null);setQuery("");setActiveQuery("");setError("")}
-  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const response=await fetch("/api/internal/admin/session",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({password:secret})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Sign in failed");setSecret("");await load("all",1)}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}}
+  async function logout(){await fetch("/api/internal/admin/session",{method:"DELETE",credentials:"same-origin"});setSecret("");setPassword("");setData(null);setQuery("");setActiveQuery("");setError("")}
+  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const response=await fetch("/api/internal/admin/credentials",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({action:setupRequired?"setup":"login",email,password,setupSecret:setupRequired?secret:undefined})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Sign in failed");setSecret("");setPassword("");setSetupRequired(false);await load("all",1)}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}}
   const filtered=data?.records||[];
   const s=data?.summary;
   return <main style={{minHeight:"100vh",background:"#0c1513",color:"#f7f4ec",padding:"32px 20px",fontFamily:"'DM Sans',sans-serif"}}>
@@ -45,15 +50,17 @@ export default function AdminDashboard(){
       </header>
       {!data?<section style={{maxWidth:490,margin:"68px auto",background:"#17241f",border:"1px solid #405047",padding:"clamp(22px,5vw,40px)"}}>
         <LockKeyhole size={30} color="#d6b784"/><h2 style={{fontSize:25,margin:"20px 0 10px"}}>Administrator access</h2>
-        <p style={{color:"#c4cec7",lineHeight:1.7,marginBottom:24}}>Use your private administrator credential to view registrations. This development-only screen creates a short-lived, secure session cookie.</p>
+        <p style={{color:"#c4cec7",lineHeight:1.7,marginBottom:24}}>{setupRequired?"Create your administrator password. This one-time setup requires the existing admin secret.":"Sign in with your administrator email and password."}</p>
         <form onSubmit={login}>
-          <label htmlFor="admin-key" style={{display:"block",marginBottom:8}}>Admin API secret</label>
-          <input id="admin-key" type="password" autoComplete="off" value={secret} onChange={e=>setSecret(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
-          
+          <label htmlFor="admin-email" style={{display:"block",marginBottom:8}}>Email address</label>
+          <input id="admin-email" type="email" value={email} readOnly style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
+          <label htmlFor="admin-password" style={{display:"block",marginBottom:8}}>{setupRequired?"Create password (12 characters minimum)":"Password"}</label>
+          <input id="admin-password" type="password" autoComplete={setupRequired?"new-password":"current-password"} minLength={12} value={password} onChange={e=>setPassword(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
+          {setupRequired&&<><label htmlFor="admin-key" style={{display:"block",marginBottom:8}}>One-time setup secret</label><input id="admin-key" type="password" autoComplete="off" value={secret} onChange={e=>setSecret(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/></>}
           {error&&<p role="alert" style={{color:"#ffb2a6",marginBottom:16}}>{error}</p>}
-          <button disabled={busy} type="submit" style={{background:"#d5b17c",color:"#172016",border:0,padding:"15px 24px",width:"100%",fontWeight:700}}>{busy?"Checking access...":"Access dashboard"}</button>
+          <button disabled={busy||!setupLoaded} type="submit" style={{background:"#d5b17c",color:"#172016",border:0,padding:"15px 24px",width:"100%",fontWeight:700}}>{busy?"Please wait...":setupRequired?"Create admin account":"Sign in"}</button>
         </form>
-        <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Never share your administrator secret or use this prototype on a shared device.</p>
+        <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Administrator access is restricted to Preview. Never share your password.</p>
       </section>:<>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:14}}>
