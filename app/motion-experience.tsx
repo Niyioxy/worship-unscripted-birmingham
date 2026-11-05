@@ -25,6 +25,7 @@ export default function MotionExperience(){
  const bar=useRef<HTMLDivElement>(null);
  useEffect(()=>{
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(pathname!=="/"){if(bar.current)bar.current.style.transform="scaleX(0)";return;}
   const elements=Array.from(document.querySelectorAll<HTMLElement>(".vision-title,.vision-body,.section-heading,.experience-feature,.experience-facts>div,.moments-intro,.moment-stage,.statement-inner,.values-top,.value-row,.faq-layout>div,.join-inner,.registration-story,.registration-form-panel,.convener-portrait,.convener-copy,.invitation-bridge-inner"));
   let observer:IntersectionObserver|undefined;
   if(!reduce&&"IntersectionObserver" in window){
@@ -40,5 +41,5 @@ export default function MotionExperience(){
   window.addEventListener("scroll",onScroll,{passive:true});document.addEventListener("pointermove",onPointer,{passive:true});document.addEventListener("pointerout",resetPointer,{passive:true});onScroll();
   return()=>{observer?.disconnect();window.removeEventListener("scroll",onScroll);document.removeEventListener("pointermove",onPointer);document.removeEventListener("pointerout",resetPointer);for(const element of elements){element.classList.remove("motion-reveal","motion-visible");element.style.removeProperty("--reveal-delay")}document.documentElement.style.removeProperty("--parallax-offset")}
  },[pathname]);
- return <><div ref={bar} className="reading-progress" aria-hidden="true"/>{pathname==="/"&&<AmbientCanvas/>}</>;
+ return <>{pathname==="/"&&<><div ref={bar} className="reading-progress" aria-hidden="true"/><AmbientCanvas/></>}</>;
 }
