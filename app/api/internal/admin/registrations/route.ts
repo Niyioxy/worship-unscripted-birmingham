@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
     return json({ error: "Invalid pagination" }, 400);
   }
   const offset = (page - 1) * limit;
+  const search = (params.get("search") ?? "").trim();
+  if (search.length > 120) return json({ error: "Search is too long" }, 400);
 
   if (!process.env.DATABASE_URL) return json({ error: "Database unavailable" }, 503);
   try {
@@ -51,8 +53,9 @@ export async function GET(request: NextRequest) {
         consent_at, updates_opt_in, created_at, updated_at, last_interaction_at
         FROM public.worship_interest
         WHERE ($1::text = 'all' OR interest = $1)
+          AND ($4::text = '' OR full_name ILIKE '%' || $4 || '%' OR email ILIKE '%' || $4 || '%' OR COALESCE(phone, '') ILIKE '%' || $4 || '%')
         ORDER BY created_at DESC, id DESC
-        LIMIT $2 OFFSET $3`, [interest, limit, offset])
+        LIMIT $2 OFFSET $3`, [interest, limit, offset, search])
     ]);
     return json({
       ok: true,
@@ -60,6 +63,7 @@ export async function GET(request: NextRequest) {
       filter: interest,
       page,
       limit,
+      search,
       records: records.rows
     });
   } catch (error) {
