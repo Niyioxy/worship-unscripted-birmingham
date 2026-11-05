@@ -280,3 +280,26 @@ html{scroll-padding-top:20px}
 .topbar .nav-cta{flex:0 0 auto}
 @media(max-width:1250px){.topbar .nav-cta{display:none}.topbar .menu-toggle{display:block;background:transparent;border:0;color:#fff;width:44px;height:44px;flex-shrink:0}.topbar .navitems{display:none;position:absolute;top:90px;left:0;right:0;background:#10251c;padding:28px max(24px,5vw) 34px;flex-direction:column;align-items:stretch;gap:21px;box-shadow:0 20px 35px rgba(0,0,0,.25);white-space:normal}.topbar .navitems.active{display:flex}.topbar .navitems a{font-size:15px}.topbar .mobile-cta{display:block;color:#d4b587!important}}
 @media(max-width:700px){.topbar .navitems{top:78px}}
+
+/* SVGator-inspired motion study: original, lightweight CSS/SVG implementation. */
+.worship-motion-line{position:absolute;right:4%;top:32%;width:min(46vw,650px);height:auto;color:#e7c28a;opacity:.48;pointer-events:none;z-index:1;filter:drop-shadow(0 0 16px rgba(225,181,112,.28))}
+.worship-motion-line path{stroke-dasharray:100;stroke-dashoffset:100;animation:worshipDraw 3.2s cubic-bezier(.25,.8,.3,1) .4s forwards,worshipGlow 6s ease-in-out 3.6s infinite}
+@keyframes worshipDraw{to{stroke-dashoffset:0}}
+@keyframes worshipGlow{0%,100%{opacity:.38}50%{opacity:.9}}
+.hero-reimagined .hero-overline{animation:worshipOverline .9s ease-out .25s both}
+@keyframes worshipOverline{from{opacity:0;letter-spacing:.4em;transform:translateY(12px)}to{opacity:1;letter-spacing:.2em;transform:translateY(0)}}
+.hero-reimagined .kinetic-headline>span,.hero-reimagined .kinetic-headline>em{display:block;animation:worshipHeadline .85s cubic-bezier(.16,1,.3,1) both}
+.hero-reimagined .kinetic-headline>span:nth-child(1){animation-delay:.16s}
+.hero-reimagined .kinetic-headline>span:nth-child(2){animation-delay:.29s}
+.hero-reimagined .kinetic-headline>em{animation-delay:.43s}
+@keyframes worshipHeadline{from{opacity:0;transform:translateY(30px);filter:blur(6px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+.hero-reimagined .gold-button,.join-button{position:relative;isolation:isolate;overflow:hidden}
+.hero-reimagined .gold-button:after,.join-button:after{content:"";position:absolute;inset:-90% auto -90% -60%;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.46),transparent);transform:rotate(24deg);transition:left .7s ease;pointer-events:none;z-index:-1}
+.hero-reimagined .gold-button:hover:after,.hero-reimagined .gold-button:focus-visible:after,.join-button:hover:after,.join-button:focus-visible:after{left:130%}
+.experience-detail-list>div svg,.experience-facts>div svg{transition:transform .35s ease,color .35s ease}
+.experience-detail-list>div:hover svg,.experience-facts>div:hover svg{transform:translateY(-4px) rotate(-5deg);color:#edca8f}
+.manifesto-star{display:inline-block;animation:worshipStar 14s linear infinite}
+.manifesto-star:nth-of-type(4){animation-direction:reverse}
+@keyframes worshipStar{to{transform:rotate(360deg)}}
+@media(max-width:760px){.worship-motion-line{width:75vw;right:-12%;top:24%;opacity:.22}}
+@media(prefers-reduced-motion:reduce){.worship-motion-line path{stroke-dashoffset:0;animation:none}.worship-motion-line,.manifesto-star,.hero-reimagined .kinetic-headline>span,.hero-reimagined .kinetic-headline>em,.hero-reimagined .hero-overline{animation:none!important;filter:none!important}.hero-reimagined .gold-button:after,.join-button:after{display:none}}
