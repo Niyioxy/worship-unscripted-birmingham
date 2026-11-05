@@ -1,10 +1,13 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {useLayoutEffect,useState} from "react";
+import {usePathname} from "next/navigation";
 import {Menu,X,ArrowUpRight,ArrowLeft} from "lucide-react";
 const links=[["/vision","Our vision"],["/experience","The experience"],["/our-story","Our story"],["/get-involved","Get involved"],["/community","Community"],["/gatherings","Gatherings"],["/contact","Contact"]];
 export default function InnerPage({eyebrow,title,accent,description,children}:{eyebrow:string;title:string;accent:string;description:string;children:React.ReactNode}){
  const [menu,setMenu]=useState(false);
+ const pathname=usePathname();
+ useLayoutEffect(()=>{window.scrollTo({top:0,left:0,behavior:"instant"});},[pathname]);
  return <main className="inner-page"><header className="topbar"><div className="wrap nav"><Link scroll={false} href="/" className="logo" aria-label="Worship Unscripted Birmingham"><img src="/worship-unscripted-logo.svg" alt="Worship Unscripted Birmingham" width="245" height="57" className="site-logo-image"/></Link><nav className={menu?"navitems active":"navitems"} aria-label="Main navigation">{links.map(([href,label])=><Link scroll={false} key={href} href={href} onClick={()=>setMenu(false)}>{label}</Link>)}<Link scroll={false} href="/register" onClick={()=>setMenu(false)} className="mobile-cta">Be part of it</Link></nav><Link scroll={false} className="nav-cta" href="/register">Be part of it <ArrowUpRight size={16}/></Link><button className="menu-toggle" aria-label={menu?"Close menu":"Open menu"} aria-expanded={menu} onClick={()=>setMenu(!menu)}>{menu?<X/>:<Menu/>}</button></div></header>
  <section className="inner-hero"><div className="inner-glow"/><div className="wrap inner-hero-content"><Link scroll={false} className="inner-back" href="/"><ArrowLeft size={15}/> Back to home</Link><p className="inner-eyebrow">{eyebrow}</p><h1 className="inner-headline"><span>{title}</span><em>{accent}</em></h1><p className="inner-lead">{description}</p></div><div className="inner-hero-word" aria-hidden="true">UNSCRIPTED</div></section>
  {children}
