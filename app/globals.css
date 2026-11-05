@@ -303,3 +303,7 @@ html{scroll-padding-top:20px}
 @keyframes worshipStar{to{transform:rotate(360deg)}}
 @media(max-width:760px){.worship-motion-line{width:75vw;right:-12%;top:24%;opacity:.22}}
 @media(prefers-reduced-motion:reduce){.worship-motion-line path{stroke-dashoffset:0;animation:none}.worship-motion-line,.manifesto-star,.hero-reimagined .kinetic-headline>span,.hero-reimagined .kinetic-headline>em,.hero-reimagined .hero-overline{animation:none!important;filter:none!important}.hero-reimagined .gold-button:after,.join-button:after{display:none}}
+
+/* Larger, readable main navigation on every page. */
+@media(min-width:1251px){.topbar .navitems{gap:clamp(10px,1.15vw,19px)}.topbar .navitems a,.inner-page .navitems a{font-size:15px;font-weight:600;letter-spacing:-.01em}.topbar .nav-cta{font-size:14px}}
+@media(max-width:1250px){.topbar .navitems a,.inner-page .navitems a{font-size:17px;line-height:1.5;font-weight:600}}
