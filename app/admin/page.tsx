@@ -10,7 +10,7 @@ type Result = {ok:true;summary:Summary;records:RecordRow[];page:number;limit:num
 
 export default function AdminDashboard(){
   const [secret,setSecret]=useState("");
-  const [bypass,setBypass]=useState("");
+
   const [data,setData]=useState<Result|null>(null);
   const [filter,setFilter]=useState<Interest>("all");
   const [page,setPage]=useState(1);
@@ -18,14 +18,12 @@ export default function AdminDashboard(){
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   async function load(nextFilter:Interest=filter,nextPage:number=page){
-    if(!secret.trim()){setError("Enter the administrator API secret.");return}
+
     setBusy(true);setError("");
     try{
       const url=new URL("/api/internal/admin/registrations",window.location.origin);
       url.searchParams.set("interest",nextFilter);url.searchParams.set("page",String(nextPage));
-      const headers:Record<string,string>={Authorization:`Bearer ${secret.trim()}`};
-      if(bypass.trim())headers["x-vercel-protection-bypass"]=bypass.trim();
-      const response=await fetch(url.toString(),{headers,cache:"no-store",redirect:"error"});
+      const response=await fetch(url.toString(),{credentials:"same-origin",cache:"no-store",redirect:"error"});
       const type=response.headers.get("content-type")||"";
       if(!type.includes("application/json"))throw new Error("Vercel deployment protection is blocking the request. Check the bypass secret.");
       const payload=await response.json();
@@ -34,7 +32,8 @@ export default function AdminDashboard(){
     }catch(e){setError(e instanceof Error?e.message:"Unable to load registrations.");setData(null)}
     finally{setBusy(false)}
   }
-  function logout(){setSecret("");setBypass("");setData(null);setQuery("");setError("")}
+  async function logout(){await fetch("/api/internal/admin/session",{method:"DELETE",credentials:"same-origin"});setSecret("");setData(null);setQuery("");setError("")}
+  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const response=await fetch("/api/internal/admin/session",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({password:secret})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Sign in failed");setSecret("");await load("all",1)}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}}
   const filtered=(data?.records||[]).filter(r=>[r.full_name,r.email,r.phone||""].some(v=>v.toLowerCase().includes(query.toLowerCase())));
   const s=data?.summary;
   return <main style={{minHeight:"100vh",background:"#0c1513",color:"#f7f4ec",padding:"32px 20px",fontFamily:"'DM Sans',sans-serif"}}>
@@ -45,16 +44,15 @@ export default function AdminDashboard(){
       </header>
       {!data?<section style={{maxWidth:490,margin:"68px auto",background:"#17241f",border:"1px solid #405047",padding:"clamp(22px,5vw,40px)"}}>
         <LockKeyhole size={30} color="#d6b784"/><h2 style={{fontSize:25,margin:"20px 0 10px"}}>Administrator access</h2>
-        <p style={{color:"#c4cec7",lineHeight:1.7,marginBottom:24}}>Use your private administrator credential to view registrations. This development-only screen does not save credentials to browser storage.</p>
-        <form onSubmit={(e:FormEvent)=>{e.preventDefault();void load("all",1)}}>
+        <p style={{color:"#c4cec7",lineHeight:1.7,marginBottom:24}}>Use your private administrator credential to view registrations. This development-only screen creates a short-lived, secure session cookie.</p>
+        <form onSubmit={login}>
           <label htmlFor="admin-key" style={{display:"block",marginBottom:8}}>Admin API secret</label>
           <input id="admin-key" type="password" autoComplete="off" value={secret} onChange={e=>setSecret(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
-          <label htmlFor="bypass-key" style={{display:"block",marginBottom:8}}>Vercel Preview bypass secret (if required)</label>
-          <input id="bypass-key" type="password" autoComplete="off" value={bypass} onChange={e=>setBypass(e.target.value)} style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
+          
           {error&&<p role="alert" style={{color:"#ffb2a6",marginBottom:16}}>{error}</p>}
           <button disabled={busy} type="submit" style={{background:"#d5b17c",color:"#172016",border:0,padding:"15px 24px",width:"100%",fontWeight:700}}>{busy?"Checking access...":"Access dashboard"}</button>
         </form>
-        <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Never share these secrets or use this prototype on a shared device.</p>
+        <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Never share your administrator secret or use this prototype on a shared device.</p>
       </section>:<>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:14}}>
