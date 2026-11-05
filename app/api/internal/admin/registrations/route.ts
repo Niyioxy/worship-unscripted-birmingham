@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { isAdmin } from "../../../../../lib/admin-session";
 import { Pool } from "pg";
 
 export const runtime = "nodejs";
@@ -15,15 +15,7 @@ export async function GET(request: NextRequest) {
   // This administrative API is intentionally preview-only until reviewed.
   if (process.env.VERCEL_ENV !== "preview") return json({ error: "Not found" }, 404);
 
-  const secret = process.env.ADMIN_API_SECRET;
-  if (!secret || secret.length < 32) return json({ error: "Admin API not configured" }, 503);
-
-  const auth = request.headers.get("authorization") ?? "";
-  const provided = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  const hash = (value: string) => createHash("sha256").update(value).digest();
-  if (!provided || !timingSafeEqual(hash(secret), hash(provided))) {
-    return json({ error: "Unauthorized" }, 401);
-  }
+  if (!isAdmin(request)) return json({ error: "Unauthorized" }, 401);
 
   const origin = request.headers.get("origin");
   if (origin) {
