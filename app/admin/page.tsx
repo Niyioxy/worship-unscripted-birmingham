@@ -13,8 +13,9 @@ export default function AdminDashboard(){
   const [password,setPassword]=useState("");
   const [setupRequired,setSetupRequired]=useState(false);
   const [setupLoaded,setSetupLoaded]=useState(false);
+  const [setupError,setSetupError]=useState("");
   const email="adeniyi.tosin@harvestflows.com";
-  useEffect(()=>{void fetch("/api/internal/admin/credentials",{cache:"no-store"}).then(async r=>{const j=await r.json();if(r.ok)setSetupRequired(!!j.setupRequired);else setError(j.error||"Unable to check account setup");}).catch(()=>setError("Unable to check account setup")).finally(()=>setSetupLoaded(true));void fetch("/api/internal/admin/session",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j.authenticated)void load("all",1)}).catch(()=>{});},[]);
+  useEffect(()=>{void fetch("/api/internal/admin/credentials",{cache:"no-store"}).then(async r=>{const j=await r.json();if(r.ok){setSetupRequired(!!j.setupRequired);setSetupError("");}else setSetupError(j.error||"Unable to check account setup");}).catch(()=>setSetupError("Unable to check account setup")).finally(()=>setSetupLoaded(true));void fetch("/api/internal/admin/session",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j.authenticated)void load("all",1)}).catch(()=>{});},[]);
 
   const [data,setData]=useState<Result|null>(null);
   const [filter,setFilter]=useState<Interest>("all");
@@ -51,6 +52,7 @@ export default function AdminDashboard(){
       {!data?<section style={{maxWidth:490,margin:"68px auto",background:"#17241f",border:"1px solid #405047",padding:"clamp(22px,5vw,40px)"}}>
         <LockKeyhole size={30} color="#d6b784"/><h2 style={{fontSize:25,margin:"20px 0 10px"}}>Administrator access</h2>
         <p style={{color:"#c4cec7",lineHeight:1.7,marginBottom:24}}>{setupRequired?"Create your administrator password. This one-time setup requires the existing admin secret.":"Sign in with your administrator email and password."}</p>
+        {setupError&&<div role="alert" style={{border:"1px solid #b18c58",background:"#2c291d",padding:16,marginBottom:22,lineHeight:1.7}}><strong style={{color:"#eed09d"}}>Administrator setup is not ready</strong><p style={{margin:"7px 0 0",color:"#e0d5be"}}>{setupError==="Admin database migration required"?"The administrator tables have not been created in Neon yet. Apply migration 003_admin_accounts.sql before setting up your password.":setupError}</p>{setupError==="Admin database migration required"&&<a href="https://github.com/Niyioxy/worship-unscripted-birmingham/blob/feature/complete-site-before-release/db/migrations/003_admin_accounts.sql" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginTop:10,color:"#efc787",textDecoration:"underline"}}>View the required database migration</a>}</div>}
         <form onSubmit={login}>
           <label htmlFor="admin-email" style={{display:"block",marginBottom:8}}>Email address</label>
           <input id="admin-email" type="email" value={email} readOnly style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
@@ -58,7 +60,7 @@ export default function AdminDashboard(){
           <input id="admin-password" type="password" autoComplete={setupRequired?"new-password":"current-password"} minLength={12} value={password} onChange={e=>setPassword(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/>
           {setupRequired&&<><label htmlFor="admin-key" style={{display:"block",marginBottom:8}}>One-time setup secret</label><input id="admin-key" type="password" autoComplete="off" value={secret} onChange={e=>setSecret(e.target.value)} required style={{width:"100%",padding:14,background:"#0d1713",color:"white",border:"1px solid #53655b",marginBottom:20}}/></>}
           {error&&<p role="alert" style={{color:"#ffb2a6",marginBottom:16}}>{error}</p>}
-          <button disabled={busy||!setupLoaded} type="submit" style={{background:"#d5b17c",color:"#172016",border:0,padding:"15px 24px",width:"100%",fontWeight:700}}>{busy?"Please wait...":setupRequired?"Create admin account":"Sign in"}</button>
+          <button disabled={busy||!setupLoaded||!!setupError} type="submit" style={{background:"#d5b17c",color:"#172016",border:0,padding:"15px 24px",width:"100%",fontWeight:700}}>{busy?"Please wait...":setupRequired?"Create admin account":"Sign in"}</button>
         </form>
         <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Administrator access is restricted to Preview. Never share your password.</p>
       </section>:<>
