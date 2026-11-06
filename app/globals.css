@@ -313,3 +313,56 @@ html{scroll-padding-top:20px}
 html.wu-route-pending::before{content:"";position:fixed;inset:0;z-index:99998;background:#10251c;pointer-events:all}
 html.wu-route-pending::after{content:"WORSHIP UNSCRIPTED  ·  BIRMINGHAM";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;color:#d2b080;font:700 clamp(11px,1.3vw,15px)/1.5 'Manrope',sans-serif;letter-spacing:.23em;text-align:center;white-space:nowrap;pointer-events:none}
 @media(max-width:440px){html.wu-route-pending::after{font-size:10px;letter-spacing:.12em}}
+
+/* Simple homepage, isolated from the existing internal page styling. */
+.simple-home{background:#f5f3ed;color:#243029}
+.simple-topbar{position:absolute}
+.simple-home .simple-hero{position:relative;min-height:720px;min-height:min(840px,100svh);display:flex;align-items:center;background:#0a1812;color:#fff;overflow:hidden}
+.simple-hero-photo{position:absolute;inset:0;background:url("https://images.pexels.com/photos/12633150/pexels-photo-12633150.jpeg?auto=compress&cs=tinysrgb&w=1800") center 40%/cover no-repeat;opacity:.7}
+.simple-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,19,14,.96) 0%,rgba(7,19,14,.84) 47%,rgba(7,19,14,.32) 100%),linear-gradient(0deg,rgba(7,19,14,.6),transparent 40%)}
+.simple-hero-content{position:relative;z-index:1;padding:165px 0 115px}
+.simple-kicker{display:flex;align-items:center;gap:12px;font:700 11px 'Manrope',sans-serif;letter-spacing:.2em;color:#e1c79f}
+.simple-dot{width:8px;height:8px;border-radius:50%;background:#dfb879;box-shadow:0 0 0 5px rgba(223,184,121,.13)}
+.simple-home .simple-hero h1{font:800 clamp(56px,7vw,105px)/1.06 'Manrope',sans-serif;letter-spacing:-.075em;max-width:1050px;margin:33px 0 26px}
+.simple-home h1 em,.simple-home h2 em{font-family:'Playfair Display',Georgia,serif;color:#ddbd8a;font-weight:500}
+.simple-hero-content>p{max-width:600px;font-size:17px;line-height:1.85;color:#e0e2d8}
+.simple-actions{display:flex;gap:21px;flex-wrap:wrap;align-items:center;margin-top:37px}
+.simple-primary,.simple-secondary{display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:54px;font-size:14px;font-weight:700;transition:background-color .25s,transform .25s}
+.simple-primary{background:#d4af78;color:#122017;padding:15px 23px}
+.simple-primary:hover,.simple-primary:focus-visible{background:#f0cb90;transform:translateY(-2px)}
+.simple-secondary{border:1px solid rgba(231,217,185,.65);color:#f5efe2;padding:14px 20px}
+.simple-secondary:hover,.simple-secondary:focus-visible{background:rgba(255,255,255,.11)}
+.simple-hero-foot{margin-top:74px;font:700 10px 'Manrope',sans-serif;letter-spacing:.22em;color:#cfb995}
+.simple-explore{padding:110px 0 120px}
+.simple-section-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:38px}
+.simple-section-head p{font:800 11px 'Manrope',sans-serif;letter-spacing:.2em;color:#aa854c}
+.simple-section-head h2{font:700 clamp(36px,4.6vw,65px)/1.1 'Manrope',sans-serif;letter-spacing:-.065em;margin:18px 0 0}
+.simple-section-head h2 em{color:#ae8958}
+.simple-section-head>span{font-size:14px;color:#71776e;padding-bottom:8px}
+.simple-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.simple-page-card{min-height:310px;display:flex;flex-direction:column;padding:26px 23px;color:#243029;border:1px solid #dcd9cc;background:#faf8f1;transition:transform .25s,border-color .25s,box-shadow .25s}
+.simple-page-card:hover,.simple-page-card:focus-visible{transform:translateY(-5px);border-color:#b68f5b;box-shadow:0 18px 45px rgba(27,45,31,.09)}
+.simple-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#ae8958}
+.simple-card-top>span{font:700 9px 'Manrope',sans-serif;letter-spacing:.12em}
+.simple-page-card h3{font:700 27px/1.2 'Manrope',sans-serif;letter-spacing:-.045em;margin:43px 0 12px}
+.simple-page-card p{color:#636d62;font-size:13px;line-height:1.8;margin:0 0 28px}
+.simple-card-bottom{margin-top:auto;color:#966f3e;font-weight:700;font-size:12px;display:flex;align-items:center;gap:10px}
+.simple-more-links{display:flex;gap:32px;flex-wrap:wrap;border-top:1px solid #dcd9cc;margin-top:36px;padding-top:27px}
+.simple-more-links a{display:inline-flex;gap:9px;align-items:center;color:#243029;font-size:13px;font-weight:700}
+.simple-more-links a:hover{text-decoration:underline}
+.simple-invite{background:#10251c;color:#fff;padding:112px 0;text-align:center}
+.simple-invite-content{display:flex;flex-direction:column;align-items:center}
+.simple-invite-content>span{font:700 11px 'Manrope',sans-serif;letter-spacing:.18em;color:#dbb984}
+.simple-invite-content h2{font:750 clamp(54px,7vw,90px)/1.1 'Manrope',sans-serif;letter-spacing:-.07em;margin:26px 0}
+.simple-invite-content>p{max-width:570px;color:#d0d8cf;line-height:1.85;margin:0 0 27px}
+.simple-invite-content small{margin-top:16px;color:#aeb9ac}
+.simple-footer{background:#08140e;color:#e9e5d9;padding:34px 0 23px}
+.simple-footer-top,.simple-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.simple-footer-top{padding-bottom:30px}
+.simple-footer-top>span{font:700 10px 'Manrope',sans-serif;letter-spacing:.16em;color:#bba77d}
+.simple-footer-bottom{border-top:1px solid #344138;padding-top:21px;color:#aab4aa;font-size:11px}
+.simple-footer-bottom>div{display:flex;gap:22px;flex-wrap:wrap}
+.simple-footer-bottom a{color:#c5ceb9}
+@media(max-width:1100px){.simple-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-page-card{min-height:265px}}
+@media(max-width:720px){.simple-home .simple-hero{min-height:710px}.simple-hero-content{padding:165px 0 90px}.simple-home .simple-hero h1{font-size:clamp(48px,11vw,72px)}.simple-hero-content>p{font-size:15px}.simple-hero-photo{background-position:62% center}.simple-explore{padding:75px 0}.simple-section-head{display:block}.simple-section-head>span{display:block;margin-top:16px}.simple-card-grid{grid-template-columns:1fr}.simple-page-card{min-height:240px}.simple-page-card h3{margin-top:24px}.simple-footer-top,.simple-footer-bottom{align-items:start;flex-direction:column}.simple-invite{padding:80px 0}.simple-more-links{gap:20px}}
+@media(prefers-reduced-motion:reduce){.simple-primary,.simple-secondary,.simple-page-card{transition:none!important;transform:none!important}}
