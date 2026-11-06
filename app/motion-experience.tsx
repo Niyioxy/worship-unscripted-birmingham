@@ -23,6 +23,32 @@ function AmbientCanvas(){
 export default function MotionExperience(){
  const pathname=usePathname();
  const bar=useRef<HTMLDivElement>(null);
+ // Keep a consistent branded surface over the browser while a new route loads.
+ // Capture links site-wide so the homepage and inner pages behave the same way.
+ useEffect(()=>{
+  let fallback:ReturnType<typeof setTimeout>|undefined;
+  const clear=()=>{document.documentElement.classList.remove("wu-route-pending");if(fallback)clearTimeout(fallback)};
+  const onClick=(event:MouseEvent)=>{
+   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+   const target=event.target;
+   if(!(target instanceof Element))return;
+   const link=target.closest<HTMLAnchorElement>("a[href]");
+   if(!link||link.target==="_blank"||link.hasAttribute("download"))return;
+   const destination=new URL(link.href,window.location.href);
+   if(destination.origin!==window.location.origin||destination.pathname===window.location.pathname)return;
+   document.documentElement.classList.add("wu-route-pending");
+   if(fallback)clearTimeout(fallback);
+   fallback=setTimeout(clear,8000);
+  };
+  document.addEventListener("click",onClick,true);
+  return()=>{document.removeEventListener("click",onClick,true);clear()};
+ },[]);
+ useEffect(()=>{
+  const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   document.documentElement.classList.remove("wu-route-pending");
+  }));
+  return()=>cancelAnimationFrame(frame);
+ },[pathname]);
  useEffect(()=>{
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(pathname!=="/"){if(bar.current)bar.current.style.transform="scaleX(0)";return;}
