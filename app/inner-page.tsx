@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages -- Native navigation deliberately avoids the client-side route flash. */
 "use client";
 import {useState} from "react";
 import {Menu,X,ArrowUpRight,ArrowLeft} from "lucide-react";
