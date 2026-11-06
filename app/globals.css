@@ -307,3 +307,9 @@ html{scroll-padding-top:20px}
 /* Larger, readable main navigation on every page. */
 @media(min-width:1251px){.topbar .navitems{gap:clamp(10px,1.15vw,19px)}.topbar .navitems a,.inner-page .navitems a{font-size:15px;font-weight:600;letter-spacing:-.01em}.topbar .nav-cta{font-size:14px}}
 @media(max-width:1250px){.topbar .navitems a,.inner-page .navitems a{font-size:17px;line-height:1.5;font-weight:600}}
+
+/* Deliberate route hand-off: hide the old page during an in-flight navigation.
+   Keeps the homepage layout untouched; never animates when reduced motion is set. */
+html.wu-route-pending::before{content:"";position:fixed;inset:0;z-index:99998;background:#10251c;pointer-events:all}
+html.wu-route-pending::after{content:"WORSHIP UNSCRIPTED  ·  BIRMINGHAM";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;color:#d2b080;font:700 clamp(11px,1.3vw,15px)/1.5 'Manrope',sans-serif;letter-spacing:.23em;text-align:center;white-space:nowrap;pointer-events:none}
+@media(max-width:440px){html.wu-route-pending::after{font-size:10px;letter-spacing:.12em}}
