@@ -68,6 +68,19 @@ export default function AdminDashboard(){
     }catch(e){setTestResult({ok:false,message:e instanceof Error?e.message:"Unable to run the test"});}
     finally{setTestBusy(false);}
   }
+  async function testConsentEvidence(){
+    setTestBusy(true);setTestResult(null);
+    try{
+      const response=await fetch("/api/internal/admin/test-consent",{
+        method:"POST",credentials:"same-origin"
+      });
+      const result=await response.json();
+      if(!response.ok)throw new Error(result.error||"Consent evidence test failed");
+      setTestResult({ok:true,message:result.message});
+    }catch(e){
+      setTestResult({ok:false,message:e instanceof Error?e.message:"Consent evidence test failed"});
+    }finally{setTestBusy(false);}
+  }
   async function createTestRecord(){
     setPersistentBusy(true);setTestResult(null);
     try {
@@ -201,7 +214,7 @@ export default function AdminDashboard(){
           {retention&&<p style={{fontSize:14,margin:"14px 0 0",color:"#e7d6b2"}}>{retention.review_due} of {retention.total} non-test records flagged for review. Review each record before taking any action.</p>}
           {retentionError&&<p role="alert" style={{color:"#ffb6a3",marginTop:12}}>{retentionError}</p>}
         </section>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><button type="button" onClick={()=>void exportRegistrations()} disabled={exportBusy||busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #a48b63",padding:"13px 16px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><Download size={17}/>{exportBusy?"Preparing CSV...":"Export CSV"}</button><button type="button" disabled={persistentBusy||busy} onClick={()=>void createTestRecord()} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{persistentBusy?"Working...":"Save a test participant"}</button><Link href="/register?test=1" style={{background:"#253e30",color:"#f7eee0",border:"1px solid #b99b6c",padding:"13px 16px",fontWeight:700,textDecoration:"none"}}>Test complete form</Link><button type="button" onClick={()=>void testRegistration()} disabled={testBusy||busy} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{testBusy?"Testing...":"Test registration database"}</button><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><button type="button" onClick={()=>void exportRegistrations()} disabled={exportBusy||busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #a48b63",padding:"13px 16px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><Download size={17}/>{exportBusy?"Preparing CSV...":"Export CSV"}</button><button type="button" disabled={testBusy||busy} onClick={()=>void testConsentEvidence()} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #a48b63",padding:"13px 16px",cursor:"pointer"}}>{testBusy?"Testing...":"Test consent evidence"}</button><button type="button" disabled={persistentBusy||busy} onClick={()=>void createTestRecord()} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{persistentBusy?"Working...":"Save a test participant"}</button><Link href="/register?test=1" style={{background:"#253e30",color:"#f7eee0",border:"1px solid #b99b6c",padding:"13px 16px",fontWeight:700,textDecoration:"none"}}>Test complete form</Link><button type="button" onClick={()=>void testRegistration()} disabled={testBusy||busy} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{testBusy?"Testing...":"Test registration database"}</button><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div></div>
         {testResult&&<p role="status" style={{background:testResult.ok?"#233c2e":"#3a2422",border:"1px solid "+(testResult.ok?"#5f9470":"#bf7771"),padding:16,marginBottom:20,color:"#f4efe4"}}>{testResult.ok?"✓ ":""}{testResult.message}</p>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:14}}>
           {([{name:"Total registrations",value:s?.total,Icon:Users},{name:"Attending",value:s?.attend,Icon:Users},{name:"Music team",value:s?.music,Icon:Music2},{name:"Volunteers",value:s?.volunteer,Icon:HandHeart},{name:"Updates opt-in",value:s?.opted_in,Icon:ShieldCheck}]).map(({name,value,Icon})=><div key={name} style={{background:"#192820",border:"1px solid #344c3b",padding:22}}><Icon size={19} color="#d3b481"/><p style={{color:"#c2cfc6",fontSize:12,margin:"15px 0 8px"}}>{name}</p><strong style={{fontSize:30}}>{value??0}</strong></div>)}
