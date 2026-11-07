@@ -83,7 +83,7 @@ export default function AdminDashboard(){
     finally{setPersistentBusy(false);}
   }
   const isTestRecord=(record:RecordRow)=>record.full_name==="TEST REGISTRATION (admin)"&&
-    /^wu-admin-test-[0-9a-f-]{36}@example\\.invalid$/i.test(record.email);
+    /^wu-admin-test-[0-9a-f-]{36}@example\.invalid$/i.test(record.email);
   async function logout(){await fetch("/api/internal/admin/session",{method:"DELETE",credentials:"same-origin"});setSecret("");setPassword("");setData(null);setQuery("");setActiveQuery("");setError("")}
   async function login(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const response=await fetch("/api/internal/admin/credentials",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({action:setupRequired?"setup":"login",email,password,setupSecret:setupRequired?secret:undefined})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Sign in failed");setSecret("");setPassword("");setSetupRequired(false);await load("all",1)}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}}
   const filtered=data?.records||[];
