@@ -54,13 +54,31 @@ Check Vercel and Neon contract terms, any sub-processors, processing locations, 
 - Keep optional marketing updates unchecked by default.
 - Have the responsible organiser approve the final text.
 
-## 6. Controlled release gate
+## 6. Technical controls implemented in Preview (7 November 2026)
+
+- Public registration requires **six independent gates**, all normally closed: `DATABASE_URL`, `REGISTRATION_ENABLED=true`, `PRIVACY_NOTICE_APPROVED=true`, `SPECIAL_CATEGORY_PROCESSING_APPROVED=true`, `PROCESSOR_TERMS_APPROVED=true`, and `CONSENT_MIGRATION_APPLIED=true`. Environment variables are **not** set by these code changes.
+- The registration form has a separate, required, express consent statement about interest in a Christian worship gathering possibly revealing religion. This is a **proposed Article 9(2)(a) consent workflow**, not yet a legal approval.
+- A versioned consent receipt is written transactionally to `public.worship_consent_evidence` only for public registrations. Migration: `db/migrations/004_explicit_consent_evidence.sql`. **Must be applied in Neon manually** after review and before enabling the relevant gate.
+- A privileged, Preview-only per-record deletion action requires the administrator to type the exact participant email and confirm deletion. Consent evidence cascades when the migration is installed. **Backups and downloaded CSV exports are not removed** by this action; follow the separate retention and access process.
+- The existing fictional test record and rollback test continue to work without depending on migration 004.
+- The system does not claim automatic deletion, guaranteed anti-spam throttling or a production release.
+
+### Critical Vercel agreement blocker (verified 7 November 2026)
+
+Vercel's published Data Processing Addendum, updated **17 March 2026** with effective date **31 March 2026**, section Schedule 1(6)(a), states **customers are prohibited from including sensitive data or special categories of data in Customer Data**. This is a release blocker for a worship-interest form that may reveal religious belief even if explicit consent is captured.
+
+- Source: https://vercel.com/legal/dpa
+- Obtain written clarification or a suitable agreement explicitly permitting this processing, **or** move the relevant data processing to a provider/arrangement that permits it.
+- Confirm the user's Vercel plan (the published DPA says it applies to Pro and Enterprise), the actual Neon region, Neon contractual terms, subprocessor locations and appropriate international-transfer safeguards.
+- **Do not enable the registration environment variables until the contractual issue is resolved and the responsible organiser approves the complete compliance basis.** Merely adding consent or database encryption does not override a provider prohibition.
+
+## 7. Controlled release gate
 
 Only after the above:
 1. Apply any approved migration for explicit-consent evidence, if needed.
 2. Exercise the form and admin dashboard in a protected Preview with a disposable synthetic participant.
 3. Confirm all categories, consent choices, retention behaviour, and removal process.
 4. Review access controls, rate limiting and spam safeguards.
-5. Enable registration flags only for the intended environment and publish with explicit approval.
+5. Obtain written organiser approval and configure all consent, processor and release flags only in the intended environment; **do not enable these now**.
 
 This is an operational review checklist, not legal advice. Seek qualified UK privacy advice if the Article 9 condition remains unclear.
