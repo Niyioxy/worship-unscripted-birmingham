@@ -150,7 +150,7 @@ export default function AdminDashboard(){
             <p style={{margin:0}}>✓ Administrator access, saved test registrations and CSV export have been checked.</p>
             <p style={{margin:0}}>✓ Worship Unscripted Birmingham confirmed as an independent programme.</p>
             <p style={{margin:0}}>✓ HarvestFlow confirmed as programme sponsor only, not a joint controller by sponsorship.</p>
-            <p style={{margin:0}}>• Confirm the responsible person or legal entity controlling registration data and their contact details.</p>
+            <p style={{margin:0}}>✓ Adeniyi Owolabi confirmed as founder, decision-maker and registration data controller; privacy contact identified.</p>
             <p style={{margin:0}}>• Confirm lawful basis, including any religious-belief/special-category requirements.</p>
             <p style={{margin:0}}>• Confirm provider locations, international transfers, retention and deletion process.</p>
             <p style={{margin:0}}>• Approve the final privacy notice before enabling public registration.</p>
