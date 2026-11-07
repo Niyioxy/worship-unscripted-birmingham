@@ -26,8 +26,10 @@ export default function AdminDashboard(){
   const [testBusy,setTestBusy]=useState(false);
   const [persistentBusy,setPersistentBusy]=useState(false);
   const [exportBusy,setExportBusy]=useState(false);
+  const [registrationOpen,setRegistrationOpen]=useState(false);
   const [testResult,setTestResult]=useState<{ok:boolean;message:string}|null>(null);
   const [error,setError]=useState("");
+  useEffect(()=>{fetch("/api/interest",{cache:"no-store"}).then(r=>r.json()).then(j=>setRegistrationOpen(j.acceptingInterest===true)).catch(()=>setRegistrationOpen(false));},[]);
   async function load(nextFilter:Interest=filter,nextPage:number=page,nextQuery:string=activeQuery){
 
     setBusy(true);setError("");
@@ -139,6 +141,20 @@ export default function AdminDashboard(){
         </form>
         <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Administrator access is restricted to Preview. Never share your password.</p>
       </section>:<>
+        <section aria-label="Registration launch readiness" style={{marginTop:28,padding:20,border:"1px solid #4b5f51",background:"#14261d"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+            <div><h2 style={{fontSize:20,margin:"0 0 8px"}}>Public registration readiness</h2><p style={{fontSize:13,color:"#c0d2c5",margin:0}}>Database testing has passed. The public form remains separate from admin-only tests.</p></div>
+            <strong style={{fontSize:12,color:registrationOpen?"#9ee2b7":"#efd09c",border:"1px solid currentColor",padding:"8px 12px"}}>{registrationOpen?"Accepting registrations":"Public registration closed"}</strong>
+          </div>
+          <div style={{marginTop:17,fontSize:13,lineHeight:1.9,color:"#d6e0d4"}}>
+            <p style={{margin:0}}>✓ Administrator access, saved test registrations and CSV export have been checked.</p>
+            <p style={{margin:0}}>• Finalise controller identities and responsibilities with HarvestFlow.</p>
+            <p style={{margin:0}}>• Confirm lawful basis, including any religious-belief/special-category requirements.</p>
+            <p style={{margin:0}}>• Confirm provider locations, international transfers, retention and deletion process.</p>
+            <p style={{margin:0}}>• Approve the final privacy notice before enabling public registration.</p>
+          </div>
+          <Link href="/privacy" style={{display:"inline-block",marginTop:14,color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Review draft privacy information</Link>
+        </section>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><button type="button" onClick={()=>void exportRegistrations()} disabled={exportBusy||busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #a48b63",padding:"13px 16px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><Download size={17}/>{exportBusy?"Preparing CSV...":"Export CSV"}</button><button type="button" disabled={persistentBusy||busy} onClick={()=>void createTestRecord()} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{persistentBusy?"Working...":"Save a test participant"}</button><Link href="/register?test=1" style={{background:"#253e30",color:"#f7eee0",border:"1px solid #b99b6c",padding:"13px 16px",fontWeight:700,textDecoration:"none"}}>Test complete form</Link><button type="button" onClick={()=>void testRegistration()} disabled={testBusy||busy} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{testBusy?"Testing...":"Test registration database"}</button><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div></div>
         {testResult&&<p role="status" style={{background:testResult.ok?"#233c2e":"#3a2422",border:"1px solid "+(testResult.ok?"#5f9470":"#bf7771"),padding:16,marginBottom:20,color:"#f4efe4"}}>{testResult.ok?"✓ ":""}{testResult.message}</p>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:14}}>
