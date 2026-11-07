@@ -96,6 +96,27 @@ export default function AdminDashboard(){
     }catch(e){setTestResult({ok:false,message:e instanceof Error?e.message:"Could not delete test registration"});}
     finally{setPersistentBusy(false);}
   }
+  async function deleteParticipant(record:RecordRow){
+    const typed=window.prompt("To permanently remove this participant's registration, type their email address exactly. Only do this for a verified deletion request.");
+    if(typed===null)return;
+    if(typed.trim().toLowerCase()!==record.email.toLowerCase()){
+      setTestResult({ok:false,message:"Email did not match. Nothing was deleted."});return;
+    }
+    if(!window.confirm("Confirm permanent database deletion? Exported copies and provider backups require separate review."))return;
+    setPersistentBusy(true);setTestResult(null);
+    try{
+      const response=await fetch("/api/internal/admin/delete-registration",{
+        method:"DELETE",credentials:"same-origin",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({id:record.id,email:record.email,confirm:"DELETE REGISTRATION"})
+      });
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Deletion failed");
+      setTestResult({ok:true,message:payload.message});
+      await load("all",1,"");
+    }catch(e){
+      setTestResult({ok:false,message:e instanceof Error?e.message:"Deletion failed"});
+    }finally{setPersistentBusy(false);}
+  }
   const isTestRecord=(record:RecordRow)=>record.full_name==="TEST REGISTRATION (admin)"&&
     /^wu-admin-test-[0-9a-f-]{36}@example\.invalid$/i.test(record.email);
   async function exportRegistrations(){
@@ -163,7 +184,7 @@ export default function AdminDashboard(){
             <p style={{margin:0}}>✓ HarvestFlow confirmed as programme sponsor only, not a joint controller by sponsorship.</p>
             <p style={{margin:0}}>✓ Adeniyi Owolabi confirmed as founder, decision-maker and registration data controller; privacy contact identified.</p>
             <p style={{margin:0}}>• Document Article 6 lawful basis and assess Article 9 religious-belief condition before collecting registrations.</p>
-            <p style={{margin:0}}>• Confirm provider locations, international transfers, retention and deletion process.</p>
+            <p style={{margin:0}}>• Resolve Vercel DPA prohibition on special-category data, provider contracts and processing locations.\n            </p><p style={{margin:0}}>• Apply consent-evidence migration 004, approve final privacy notice and test rights-request removal.</p>
             <p style={{margin:0}}>• Approve the final privacy notice before enabling public registration.</p>
           </div>
           <Link href="/privacy" style={{display:"inline-block",marginTop:14,color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Review draft privacy information</Link>
@@ -191,7 +212,7 @@ export default function AdminDashboard(){
             <label><span style={{display:"block",fontSize:12,color:"#c6d1c9",marginBottom:5}}>Search all registrations</span><span style={{display:"flex",alignItems:"center",gap:7,border:"1px solid #53655b",padding:"0 10px",background:"#0d1713"}}><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();void load(filter,1,query.trim())}}} placeholder="Name or email" style={{background:"transparent",color:"#fff",padding:"10px 0",border:0,outline:"none"}}/></span></label><button type="button" onClick={()=>void load(filter,1,query.trim())} disabled={busy} style={{alignSelf:"end",background:"#d5b17c",color:"#172016",border:0,padding:"11px 15px",fontWeight:700}}>Search</button>
           </div></div>
           {error&&<p role="alert" style={{color:"#ffb2a6"}}>{error}</p>}
-          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",textAlign:"left",fontSize:13}}><thead><tr style={{color:"#e2c18e",borderBottom:"1px solid #53655b"}}>{["Name","Email","Phone","Interest","Updates","Registered","Actions"].map(h=><th key={h} style={{padding:"14px 12px"}}>{h}</th>)}</tr></thead><tbody>{filtered.map(r=><tr key={r.id} style={{borderBottom:"1px solid #304339"}}><td style={{padding:"14px 12px"}}>{r.full_name}</td><td style={{padding:"14px 12px"}}>{r.email}</td><td style={{padding:"14px 12px"}}>{r.phone||"—"}</td><td style={{padding:"14px 12px",textTransform:"capitalize"}}>{r.interest}</td><td style={{padding:"14px 12px"}}>{r.updates_opt_in?"Yes":"No"}</td><td style={{padding:"14px 12px"}}>{new Date(r.created_at).toLocaleDateString("en-GB")}</td><td style={{padding:"14px 12px"}}>{isTestRecord(r)?<button type="button" disabled={persistentBusy} onClick={()=>void deleteTestRecord(r.id)} style={{border:"1px solid #c99c73",background:"transparent",color:"#f2cfb3",padding:"8px 12px",cursor:"pointer"}}>Delete test</button>:<span style={{color:"#82958a"}}>—</span>}</td></tr>)}</tbody></table>{filtered.length===0&&<p style={{padding:24,color:"#b5c3b8"}}>No matching registrations.</p>}</div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",textAlign:"left",fontSize:13}}><thead><tr style={{color:"#e2c18e",borderBottom:"1px solid #53655b"}}>{["Name","Email","Phone","Interest","Updates","Registered","Actions"].map(h=><th key={h} style={{padding:"14px 12px"}}>{h}</th>)}</tr></thead><tbody>{filtered.map(r=><tr key={r.id} style={{borderBottom:"1px solid #304339"}}><td style={{padding:"14px 12px"}}>{r.full_name}</td><td style={{padding:"14px 12px"}}>{r.email}</td><td style={{padding:"14px 12px"}}>{r.phone||"—"}</td><td style={{padding:"14px 12px",textTransform:"capitalize"}}>{r.interest}</td><td style={{padding:"14px 12px"}}>{r.updates_opt_in?"Yes":"No"}</td><td style={{padding:"14px 12px"}}>{new Date(r.created_at).toLocaleDateString("en-GB")}</td><td style={{padding:"14px 12px"}}>{isTestRecord(r)?<button type="button" disabled={persistentBusy} onClick={()=>void deleteTestRecord(r.id)} style={{border:"1px solid #c99c73",background:"transparent",color:"#f2cfb3",padding:"8px 12px",cursor:"pointer"}}>Delete test</button>:<button type="button" disabled={persistentBusy} onClick={()=>void deleteParticipant(r)} style={{border:"1px solid #b17d71",background:"transparent",color:"#f3c9be",padding:"8px 12px",cursor:"pointer"}}>Delete registration</button>}</td></tr>)}</tbody></table>{filtered.length===0&&<p style={{padding:24,color:"#b5c3b8"}}>No matching registrations.</p>}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:18,gap:12}}><p style={{fontSize:12,color:"#b8c7bc"}}>Page {page} · Up to 25 records per page</p><div style={{display:"flex",gap:8}}><button disabled={busy||page===1} onClick={()=>void load(filter,page-1)} style={{padding:"9px 13px"}}>Previous</button><button disabled={busy||(data.records.length<25)} onClick={()=>void load(filter,page+1)} style={{padding:"9px 13px"}}>Next</button></div></div>
         </section>
       </>}
