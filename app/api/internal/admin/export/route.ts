@@ -12,7 +12,7 @@ const json = (body: object, status = 200) =>
 // Protect spreadsheet readers from formula injection and preserve UTF-8 content.
 function csvCell(value: unknown) {
   let str = value == null ? "" : String(value);
-  if (/^[\\s\\u0000-\\u001f]*[=+@-]/u.test(str)) str = "'" + str;
+  if (/^[\s\u0000-\u001f]*[=+@-]/u.test(str)) str = "'" + str;
   return '"' + str.replace(/"/g, '""') + '"';
 }
 
