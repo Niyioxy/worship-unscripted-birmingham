@@ -5,8 +5,8 @@ Status: **Prepared; execute only after migration and provider approval**.
 1. Keep Production unchanged. Protect Preview with admin access.
 2. Obtain suitable contractual clearance for possibly religious-belief-revealing information.
 3. Apply and verify `db/migrations/004_explicit_consent_evidence.sql` to the target Neon database using its SQL editor, after reviewing its foreign key to `public.worship_interest(email)`.
-4. Use fictional `@example.invalid` addresses only, never a real person's details.
-5. Confirm all six registration gates are closed by default.
+4. In the Preview administrator dashboard click **Test consent evidence**. It should fail helpfully before migration 004; after applying migration 004 it should insert, check and roll back a synthetic registration plus consent evidence.\n5. Use fictional `@example.invalid` addresses only, never a real person's details.
+6. Confirm all six registration gates are closed by default.
 
 ## Test cases
 - Public GET `/api/interest` returns `acceptingInterest:false` when any release gate is missing.
