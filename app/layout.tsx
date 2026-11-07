@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Worship Unscripted Birmingham | Christian Worship & Prayer",
   description,
   applicationName: "Worship Unscripted Birmingham",
+  verification: { google: "x8gQWazbPelLaTqUx3QiaGxomneQ1qmDUowDGMsAc80" },
   alternates: { canonical: "/" },
   robots: preview ? { index: false, follow: false, googleBot: { index: false, follow: false } } : { index: true, follow: true },
   openGraph: {
