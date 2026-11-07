@@ -1,6 +1,6 @@
 # Worship Unscripted Birmingham: Registration launch decisions
 
-Status: **Draft, not approved.** Public registration must remain closed until the decisions below are documented and implemented.
+Status: **Draft, not approved.** Public registration must remain closed until the decisions below are documented and implemented.\n\nSupporting material: [provider approval requests](provider-approval-requests.md), [registration acceptance tests](registration-acceptance-tests.md), and [migration 004](../db/migrations/004_explicit_consent_evidence.sql).
 
 ## Confirmed operating arrangement
 
