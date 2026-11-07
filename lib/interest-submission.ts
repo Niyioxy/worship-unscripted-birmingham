@@ -43,3 +43,25 @@ export async function saveInterestSubmission(db: Pool | PoolClient, entry: Inter
     [entry.fullName,entry.email,entry.phone||null,entry.interest,entry.firstTime,entry.updates]
   );
 }
+
+/**
+ * Separate Article 9 explicit-consent evidence.
+ * The public endpoint calls this inside the same transaction as its registration.
+ * Do not call without checking consent flags and recording the exact text version.
+ */
+export const SPECIAL_CATEGORY_CONSENT_VERSION = "religious-interest-v1-2026-11";
+export async function savePublicInterestSubmission(
+  db: PoolClient, entry: InterestSubmission, consentVersion: string
+) {
+  if (consentVersion !== SPECIAL_CATEGORY_CONSENT_VERSION) {
+    throw new Error("Consent statement version mismatch");
+  }
+  await saveInterestSubmission(db, entry);
+  await db.query(
+    `INSERT INTO public.worship_consent_evidence (email, statement_version, consented_at, updated_at)
+     VALUES ($1,$2,NOW(),NOW())
+     ON CONFLICT(email) DO UPDATE SET statement_version=EXCLUDED.statement_version,
+       consented_at=EXCLUDED.consented_at,updated_at=NOW()`,
+    [entry.email, consentVersion]
+  );
+}
