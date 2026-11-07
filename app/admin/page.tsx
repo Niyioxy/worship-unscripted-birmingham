@@ -23,6 +23,8 @@ export default function AdminDashboard(){
   const [query,setQuery]=useState("");
   const [activeQuery,setActiveQuery]=useState("");
   const [busy,setBusy]=useState(false);
+  const [testBusy,setTestBusy]=useState(false);
+  const [testResult,setTestResult]=useState<{ok:boolean;message:string}|null>(null);
   const [error,setError]=useState("");
   async function load(nextFilter:Interest=filter,nextPage:number=page,nextQuery:string=activeQuery){
 
@@ -38,6 +40,18 @@ export default function AdminDashboard(){
       setData(payload as Result);setFilter(nextFilter);setPage(nextPage);setActiveQuery(nextQuery);
     }catch(e){setError(e instanceof Error?e.message:"Unable to load registrations.");setData(null)}
     finally{setBusy(false)}
+  }
+  async function testRegistration(){
+    setTestBusy(true);setTestResult(null);
+    try{
+      const response=await fetch("/api/internal/admin/test-registration",{
+        method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"
+      });
+      const result=await response.json();
+      setTestResult({ok:response.ok&&result.ok===true,message:response.ok?result.message:(result.error||"Unable to test registration")});
+      if(response.ok)await load();
+    }catch(e){setTestResult({ok:false,message:e instanceof Error?e.message:"Unable to run the test"});}
+    finally{setTestBusy(false);}
   }
   async function logout(){await fetch("/api/internal/admin/session",{method:"DELETE",credentials:"same-origin"});setSecret("");setPassword("");setData(null);setQuery("");setActiveQuery("");setError("")}
   async function login(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const response=await fetch("/api/internal/admin/credentials",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({action:setupRequired?"setup":"login",email,password,setupSecret:setupRequired?secret:undefined})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Sign in failed");setSecret("");setPassword("");setSetupRequired(false);await load("all",1)}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}}
@@ -64,7 +78,8 @@ export default function AdminDashboard(){
         </form>
         <p style={{fontSize:12,color:"#aebdb4",marginTop:20}}><ShieldCheck size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Administrator access is restricted to Preview. Never share your password.</p>
       </section>:<>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><button type="button" onClick={()=>void testRegistration()} disabled={testBusy||busy} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{testBusy?"Testing...":"Test registration database"}</button><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div></div>
+        {testResult&&<p role="status" style={{background:testResult.ok?"#233c2e":"#3a2422",border:"1px solid "+(testResult.ok?"#5f9470":"#bf7771"),padding:16,marginBottom:20,color:"#f4efe4"}}>{testResult.ok?"✓ ":""}{testResult.message}</p>}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:14}}>
           {([{name:"Total registrations",value:s?.total,Icon:Users},{name:"Attending",value:s?.attend,Icon:Users},{name:"Music team",value:s?.music,Icon:Music2},{name:"Volunteers",value:s?.volunteer,Icon:HandHeart},{name:"Updates opt-in",value:s?.opted_in,Icon:ShieldCheck}]).map(({name,value,Icon})=><div key={name} style={{background:"#192820",border:"1px solid #344c3b",padding:22}}><Icon size={19} color="#d3b481"/><p style={{color:"#c2cfc6",fontSize:12,margin:"15px 0 8px"}}>{name}</p><strong style={{fontSize:30}}>{value??0}</strong></div>)}
         </div>
