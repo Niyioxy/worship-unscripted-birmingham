@@ -184,8 +184,8 @@ export default function AdminDashboard(){
             <p style={{margin:0}}>✓ HarvestFlow confirmed as programme sponsor only, not a joint controller by sponsorship.</p>
             <p style={{margin:0}}>✓ Adeniyi Owolabi confirmed as founder, decision-maker and registration data controller; privacy contact identified.</p>
             <p style={{margin:0}}>• Document Article 6 lawful basis and assess Article 9 religious-belief condition before collecting registrations.</p>
-            <p style={{margin:0}}>• Resolve Vercel DPA prohibition on special-category data, provider contracts and processing locations.\n            </p><p style={{margin:0}}>• Apply consent-evidence migration 004, approve final privacy notice and test rights-request removal.</p>
-            <p style={{margin:0}}>• Approve the final privacy notice before enabling public registration.</p>
+            <p style={{margin:0}}>• Resolve Vercel DPA prohibition on special-category data, provider contracts and processing locations.</p><p style={{margin:0}}>• Apply consent-evidence migration 004, approve final privacy notice and test rights-request removal.</p>
+            <p style={{margin:0}}>• Explicit organiser approval is needed before enabling public registration.</p>
           </div>
           <Link href="/privacy" style={{display:"inline-block",marginTop:14,color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Review draft privacy information</Link>
           <a href="https://github.com/Niyioxy/worship-unscripted-birmingham/blob/feature/complete-site-before-release/docs/registration-launch-privacy-checklist.md" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",margin:"14px 0 0 20px",color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Open registration launch checklist</a>
