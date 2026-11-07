@@ -9,7 +9,7 @@ export type InterestSubmission = {
   updates: boolean;
 };
 
-const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateInterestSubmission(body: Record<string, unknown>): InterestSubmission {
   const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
