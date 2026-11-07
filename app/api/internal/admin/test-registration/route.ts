@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { validateInterestSubmission, saveInterestSubmission } from "../../../../../lib/interest-submission";
 import { NextRequest, NextResponse } from "next/server";
 import { Pool } from "pg";
 import { isAdmin, sameOrigin } from "../../../../../lib/admin-session";
@@ -20,31 +21,41 @@ export async function POST(request: NextRequest) {
   const client = await pool.connect().catch(() => null);
   if (!client) return respond({ error: "Unable to connect to Neon" }, 503);
   const email = `test-${randomUUID()}@example.invalid`;
+  let interest = "attend";
+  let firstTime = "yes";
+  let body: Record<string, unknown> = {};
+  const raw = await request.text();
+  if(raw.length>8192){client.release();return respond({error:"Request too large"},413)}
+  try{body=raw?JSON.parse(raw):{}}catch{client.release();return respond({error:"Invalid JSON"},400)}
+  if(body && typeof body === "object" && !Array.isArray(body)){
+    if(["attend","music","volunteer"].includes(String(body.interest))) interest=String(body.interest);
+    if(["yes","no"].includes(String(body.firstTime))) firstTime=String(body.firstTime);
+  }
   let inTransaction = false;
   try {
     await client.query("BEGIN");
     inTransaction = true;
     await client.query("SET LOCAL statement_timeout = '5000ms'");
-    const saved = await client.query(
-      `INSERT INTO public.worship_interest
-       (full_name, email, phone, interest, first_time, updates_opt_in)
-       VALUES ($1, $2, NULL, 'attend', true, false) RETURNING id`,
-      ["Registration Smoke Test", email]
+    // Use the exact same validation and save function as the public form.
+    // Always substitute fictional details so testing never handles real identities.
+    const entry=validateInterestSubmission({
+      fullName:"Registration Form Test",
+      email,phone:"",
+      interest,firstTime,consent:true,updates:false
+    });
+    await saveInterestSubmission(client,entry);
+    const read=await client.query(
+      "SELECT id FROM public.worship_interest WHERE email=$1 AND interest=$2",
+      [email,entry.interest]
     );
-    const read = await client.query(
-      "SELECT id FROM public.worship_interest WHERE email=$1", [email]
-    );
-    if (saved.rowCount !== 1 || read.rowCount !== 1 ||
-        String(saved.rows[0].id) !== String(read.rows[0].id)) {
-      throw new Error("Registration record could not be verified");
-    }
+    if(read.rowCount!==1)throw new Error("Registration could not be verified");
     await client.query("ROLLBACK");
     inTransaction = false;
     const remaining = await client.query(
       "SELECT 1 FROM public.worship_interest WHERE email=$1", [email]
     );
     if (remaining.rowCount !== 0) throw new Error("Test rollback could not be verified");
-    return respond({ ok: true, message: "Registration insert, lookup and rollback passed. No test record was kept.", publicRegistrationEnabled: process.env.REGISTRATION_ENABLED === "true" && process.env.PRIVACY_NOTICE_APPROVED === "true" });
+    return respond({ ok: true, message: "Registration form validation, database insert, lookup and rollback passed. No test record was kept.", publicRegistrationEnabled: process.env.REGISTRATION_ENABLED === "true" && process.env.PRIVACY_NOTICE_APPROVED === "true" });
   } catch (error) {
     console.error("Registration smoke test failed", error instanceof Error ? error.message : "unknown");
     return respond({ error: "Registration database test failed. Check the server logs for details." }, 500);
