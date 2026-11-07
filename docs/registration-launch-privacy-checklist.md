@@ -10,7 +10,7 @@ Status: **Draft, not approved.** Public registration must remain closed until th
 - Website hosting: Vercel. Registration database: Neon.
 - Admin login, synthetic data insert/read/delete, and CSV export were tested in Preview.
 
-## 1. Confirm lawful basis (action required)
+## 1. Confirm lawful basis (action required)\n\nICO guidance updated October 2026 confirms that special-category processing requires both Article 6 and Article 9 conditions documented in advance: https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/a-guide-to-lawful-basis/special-category-data/ . For a new attendee with no previous connection, do not presume the Article 9(2)(d) not-for-profit condition applies. The ICO notes restrictions concerning regular contacts and prospective individuals: https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/special-category-data/what-are-the-conditions-for-processing/ .
 
 Document a UK GDPR Article 6 basis for each distinct purpose. A likely candidate for handling invitations and enquiries is Article 6(1)(f), legitimate interests, **only after an interests and balancing assessment**. For optional promotional updates, assess UK GDPR consent and PECR direct-marketing rules.
 
@@ -33,13 +33,19 @@ Official source: https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resou
 
 Check Vercel and Neon contract terms, any sub-processors, processing locations, data protection terms, and international-transfer mechanism where relevant. Record your findings. The privacy notice must match the actual arrangements, not assumptions.
 
+### Provider research recorded 7 November 2026
+
+- **Vercel:** Its current published DPA is at https://vercel.com/legal/dpa and describes processors, sub-processors, cross-border safeguards and processing in the US. **Do not assume the agreement covers the project's account:** verify the plan, contractual applicability and enabled hosting/logging features. On the retrieved DPA, coverage is stated for Pro and Enterprise plans.
+- **Neon:** Its published DPA is available at https://neon.com/pdf/DPA.pdf, and its security portal is https://neon.com/security. **Do not assume the precise database region:** confirm the region configured for this particular Neon project and its actual sub-processors.
+- **Not yet verified:** Vercel account plan, Neon project region, exact processing/subprocessor locations for these accounts, signing/acceptance of applicable DPAs, restricted-transfer mechanism, backup and deletion terms. Record evidence and dates before final privacy notice approval.
+
 ## 4. Retention and deletion
 
 - Decide and document the retention period for a person who registered interest but never attends (draft suggests 12 months since last meaningful interaction).
 - Establish a tested process to delete or anonymise expired records.
 - Establish a process for access, correction, removal and withdrawal requests.
 - Verify that database backups and exports are covered by appropriate retention and access processes.
-- Do not claim automatic deletion until automation is actually implemented and tested.
+- The Preview admin dashboard provides a **read-only 12-month retention review** that excludes fictional test records. It does **not** delete data or establish the final policy.\n- Do not claim automatic deletion until automation is actually implemented and tested.
 
 ## 5. Final privacy notice and consent UX
 
