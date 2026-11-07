@@ -27,6 +27,8 @@ export default function AdminDashboard(){
   const [persistentBusy,setPersistentBusy]=useState(false);
   const [exportBusy,setExportBusy]=useState(false);
   const [registrationOpen,setRegistrationOpen]=useState(false);
+  const [retention,setRetention]=useState<{total:number;review_due:number;periodMonths:number}|null>(null);
+  const [retentionError,setRetentionError]=useState("");
   const [testResult,setTestResult]=useState<{ok:boolean;message:string}|null>(null);
   const [error,setError]=useState("");
   useEffect(()=>{fetch("/api/interest",{cache:"no-store"}).then(r=>r.json()).then(j=>setRegistrationOpen(j.acceptingInterest===true)).catch(()=>setRegistrationOpen(false));},[]);
@@ -41,9 +43,18 @@ export default function AdminDashboard(){
       if(!type.includes("application/json"))throw new Error("Vercel deployment protection is blocking the request. Check the bypass secret.");
       const payload=await response.json();
       if(!response.ok)throw new Error(payload.error||`Request failed (${response.status})`);
-      setData(payload as Result);setFilter(nextFilter);setPage(nextPage);setActiveQuery(nextQuery);
+      setData(payload as Result);void refreshRetention();setFilter(nextFilter);setPage(nextPage);setActiveQuery(nextQuery);
     }catch(e){setError(e instanceof Error?e.message:"Unable to load registrations.");setData(null)}
     finally{setBusy(false)}
+  }
+  async function refreshRetention(){
+    setRetentionError("");
+    try {
+      const response=await fetch("/api/internal/admin/retention-review",{credentials:"same-origin",cache:"no-store"});
+      const payload=await response.json();
+      if(!response.ok)throw new Error(payload.error||"Retention check unavailable");
+      setRetention({total:payload.total,review_due:payload.review_due,periodMonths:payload.periodMonths});
+    }catch(e){setRetentionError(e instanceof Error?e.message:"Retention review unavailable");}
   }
   async function testRegistration(){
     setTestBusy(true);setTestResult(null);
@@ -157,6 +168,17 @@ export default function AdminDashboard(){
           </div>
           <Link href="/privacy" style={{display:"inline-block",marginTop:14,color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Review draft privacy information</Link>
           <a href="https://github.com/Niyioxy/worship-unscripted-birmingham/blob/feature/complete-site-before-release/docs/registration-launch-privacy-checklist.md" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",margin:"14px 0 0 20px",color:"#e6bd80",fontSize:13,textDecoration:"underline"}}>Open registration launch checklist</a>
+        </section>
+        <section aria-label="Data retention review" style={{marginTop:16,padding:18,background:"#17241f",border:"1px solid #3b5042"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+            <div>
+              <h2 style={{fontSize:17,margin:"0 0 7px"}}>Data retention review</h2>
+              <p style={{fontSize:13,color:"#b6c8ba",margin:0}}>Proposed review threshold: 12 months since the last recorded interaction. No records are deleted automatically.</p>
+            </div>
+            <button type="button" onClick={()=>void refreshRetention()} style={{background:"#2d4134",color:"#f6ead7",padding:"10px 14px",border:"1px solid #8e9b77",cursor:"pointer"}}>Check retention</button>
+          </div>
+          {retention&&<p style={{fontSize:14,margin:"14px 0 0",color:"#e7d6b2"}}>{retention.review_due} of {retention.total} non-test records flagged for review. Review each record before taking any action.</p>}
+          {retentionError&&<p role="alert" style={{color:"#ffb6a3",marginTop:12}}>{retentionError}</p>}
         </section>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"28px 0 20px",gap:12,flexWrap:"wrap"}}><p style={{color:"#b6c5bb"}}>Registration overview</p><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><button type="button" onClick={()=>void exportRegistrations()} disabled={exportBusy||busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #a48b63",padding:"13px 16px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><Download size={17}/>{exportBusy?"Preparing CSV...":"Export CSV"}</button><button type="button" disabled={persistentBusy||busy} onClick={()=>void createTestRecord()} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{persistentBusy?"Working...":"Save a test participant"}</button><Link href="/register?test=1" style={{background:"#253e30",color:"#f7eee0",border:"1px solid #b99b6c",padding:"13px 16px",fontWeight:700,textDecoration:"none"}}>Test complete form</Link><button type="button" onClick={()=>void testRegistration()} disabled={testBusy||busy} style={{background:"#d5b17c",color:"#172016",border:0,padding:"13px 16px",fontWeight:700,cursor:"pointer"}}>{testBusy?"Testing...":"Test registration database"}</button><button onClick={()=>void load()} disabled={busy} style={{background:"#24382e",color:"#f7f4ec",border:"1px solid #4d6355",padding:"10px 14px",display:"flex",gap:8,alignItems:"center"}}><RefreshCw size={16}/> {busy?"Refreshing...":"Refresh"}</button></div></div>
         {testResult&&<p role="status" style={{background:testResult.ok?"#233c2e":"#3a2422",border:"1px solid "+(testResult.ok?"#5f9470":"#bf7771"),padding:16,marginBottom:20,color:"#f4efe4"}}>{testResult.ok?"✓ ":""}{testResult.message}</p>}
