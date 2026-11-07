@@ -148,7 +148,8 @@ export default function AdminDashboard(){
           </div>
           <div style={{marginTop:17,fontSize:13,lineHeight:1.9,color:"#d6e0d4"}}>
             <p style={{margin:0}}>✓ Administrator access, saved test registrations and CSV export have been checked.</p>
-            <p style={{margin:0}}>• Finalise controller identities and responsibilities with HarvestFlow.</p>
+            <p style={{margin:0}}>✓ HarvestFlow confirmed as programme sponsor only, not a joint controller by sponsorship.</p>
+            <p style={{margin:0}}>• Confirm the responsible person or legal entity controlling registration data and their contact details.</p>
             <p style={{margin:0}}>• Confirm lawful basis, including any religious-belief/special-category requirements.</p>
             <p style={{margin:0}}>• Confirm provider locations, international transfers, retention and deletion process.</p>
             <p style={{margin:0}}>• Approve the final privacy notice before enabling public registration.</p>
