@@ -367,3 +367,18 @@ html{scroll-padding-top:20px}
 .simple-home .simple-page-card:focus-visible,.simple-home .simple-primary:focus-visible,.simple-home .simple-secondary:focus-visible,.simple-home .simple-more-links a:focus-visible{outline:3px solid #d4af78;outline-offset:4px}
 @media(max-width:1250px){.simple-home .topbar .navitems{max-height:calc(100dvh - 90px);overflow-y:auto;overscroll-behavior:contain}}
 @media(max-width:700px){.simple-home .topbar .navitems{max-height:calc(100dvh - 78px)}.simple-home .simple-actions{align-items:stretch;flex-direction:column}.simple-home .simple-actions a{width:100%;justify-content:space-between}.simple-home .simple-hero-foot{margin-top:45px}.simple-home .simple-kicker{font-size:10px;letter-spacing:.12em}}
+
+/* Clear, indexable Birmingham worship context without changing the hero styling. */
+.seo-intro{background:#f6f3eb;padding:88px 0;color:#1e3027}
+.seo-intro-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:clamp(36px,6vw,90px);align-items:start}
+.seo-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:#796448;margin:0 0 18px}
+.seo-intro h2{font-size:clamp(35px,4.5vw,58px);font-weight:750;line-height:1.13;letter-spacing:-.05em;margin:0 0 25px}
+.seo-intro h2 em{font-style:italic;color:#8b7045}
+.seo-intro p{line-height:1.82;margin:0 0 15px;color:#47574c;font-size:15px}
+.seo-intro a{display:inline-flex;align-items:center;gap:8px;margin-top:12px;font-weight:750;color:#234b36;text-decoration:underline;text-underline-offset:4px}
+.seo-intro-aside{background:#e7e6dc;border:1px solid #d3d2c5;padding:30px}
+.seo-intro-aside h3{font-size:24px;letter-spacing:-.04em;margin:0 0 18px}
+.seo-intro-aside p{border-bottom:1px solid #d0cfc2;padding:0 0 10px}
+.seo-intro-aside p strong{color:#22352a}
+.seo-intro a:focus-visible{outline:3px solid #a17b3e;outline-offset:4px}
+@media(max-width:780px){.seo-intro{padding:63px 0}.seo-intro-grid{grid-template-columns:1fr;gap:28px}.seo-intro-aside{padding:24px}}
