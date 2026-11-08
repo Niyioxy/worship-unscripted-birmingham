@@ -280,3 +280,105 @@ html{scroll-padding-top:20px}
 .topbar .nav-cta{flex:0 0 auto}
 @media(max-width:1250px){.topbar .nav-cta{display:none}.topbar .menu-toggle{display:block;background:transparent;border:0;color:#fff;width:44px;height:44px;flex-shrink:0}.topbar .navitems{display:none;position:absolute;top:90px;left:0;right:0;background:#10251c;padding:28px max(24px,5vw) 34px;flex-direction:column;align-items:stretch;gap:21px;box-shadow:0 20px 35px rgba(0,0,0,.25);white-space:normal}.topbar .navitems.active{display:flex}.topbar .navitems a{font-size:15px}.topbar .mobile-cta{display:block;color:#d4b587!important}}
 @media(max-width:700px){.topbar .navitems{top:78px}}
+
+/* SVGator-inspired motion study: original, lightweight CSS/SVG implementation. */
+.worship-motion-line{position:absolute;right:4%;top:32%;width:min(46vw,650px);height:auto;color:#e7c28a;opacity:.48;pointer-events:none;z-index:1;filter:drop-shadow(0 0 16px rgba(225,181,112,.28))}
+.worship-motion-line path{stroke-dasharray:100;stroke-dashoffset:100;animation:worshipDraw 3.2s cubic-bezier(.25,.8,.3,1) .4s forwards,worshipGlow 6s ease-in-out 3.6s infinite}
+@keyframes worshipDraw{to{stroke-dashoffset:0}}
+@keyframes worshipGlow{0%,100%{opacity:.38}50%{opacity:.9}}
+.hero-reimagined .hero-overline{animation:worshipOverline .9s ease-out .25s both}
+@keyframes worshipOverline{from{opacity:0;letter-spacing:.4em;transform:translateY(12px)}to{opacity:1;letter-spacing:.2em;transform:translateY(0)}}
+.hero-reimagined .kinetic-headline>span,.hero-reimagined .kinetic-headline>em{display:block;animation:worshipHeadline .85s cubic-bezier(.16,1,.3,1) both}
+.hero-reimagined .kinetic-headline>span:nth-child(1){animation-delay:.16s}
+.hero-reimagined .kinetic-headline>span:nth-child(2){animation-delay:.29s}
+.hero-reimagined .kinetic-headline>em{animation-delay:.43s}
+@keyframes worshipHeadline{from{opacity:0;transform:translateY(30px);filter:blur(6px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+.hero-reimagined .gold-button,.join-button{position:relative;isolation:isolate;overflow:hidden}
+.hero-reimagined .gold-button:after,.join-button:after{content:"";position:absolute;inset:-90% auto -90% -60%;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.46),transparent);transform:rotate(24deg);transition:left .7s ease;pointer-events:none;z-index:-1}
+.hero-reimagined .gold-button:hover:after,.hero-reimagined .gold-button:focus-visible:after,.join-button:hover:after,.join-button:focus-visible:after{left:130%}
+.experience-detail-list>div svg,.experience-facts>div svg{transition:transform .35s ease,color .35s ease}
+.experience-detail-list>div:hover svg,.experience-facts>div:hover svg{transform:translateY(-4px) rotate(-5deg);color:#edca8f}
+.manifesto-star{display:inline-block;animation:worshipStar 14s linear infinite}
+.manifesto-star:nth-of-type(4){animation-direction:reverse}
+@keyframes worshipStar{to{transform:rotate(360deg)}}
+@media(max-width:760px){.worship-motion-line{width:75vw;right:-12%;top:24%;opacity:.22}}
+@media(prefers-reduced-motion:reduce){.worship-motion-line path{stroke-dashoffset:0;animation:none}.worship-motion-line,.manifesto-star,.hero-reimagined .kinetic-headline>span,.hero-reimagined .kinetic-headline>em,.hero-reimagined .hero-overline{animation:none!important;filter:none!important}.hero-reimagined .gold-button:after,.join-button:after{display:none}}
+
+/* Larger, readable main navigation on every page. */
+@media(min-width:1251px){.topbar .navitems{gap:clamp(10px,1.15vw,19px)}.topbar .navitems a,.inner-page .navitems a{font-size:15px;font-weight:600;letter-spacing:-.01em}.topbar .nav-cta{font-size:14px}}
+@media(max-width:1250px){.topbar .navitems a,.inner-page .navitems a{font-size:17px;line-height:1.5;font-weight:600}}
+
+/* Simple homepage, isolated from the existing internal page styling. */
+.simple-home{background:#f5f3ed;color:#243029}
+.simple-topbar{position:absolute}
+.simple-home .simple-hero{position:relative;min-height:720px;min-height:min(840px,100svh);display:flex;align-items:center;background:#0a1812;color:#fff;overflow:hidden}
+.simple-hero-photo{position:absolute;inset:0;background:url("https://images.pexels.com/photos/12633150/pexels-photo-12633150.jpeg?auto=compress&cs=tinysrgb&w=1800") center 40%/cover no-repeat;opacity:.7}
+.simple-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,19,14,.96) 0%,rgba(7,19,14,.84) 47%,rgba(7,19,14,.32) 100%),linear-gradient(0deg,rgba(7,19,14,.6),transparent 40%)}
+.simple-hero-content{position:relative;z-index:1;padding:165px 0 115px}
+.simple-kicker{display:flex;align-items:center;gap:12px;font:700 11px 'Manrope',sans-serif;letter-spacing:.2em;color:#e1c79f}
+.simple-dot{width:8px;height:8px;border-radius:50%;background:#dfb879;box-shadow:0 0 0 5px rgba(223,184,121,.13)}
+.simple-home .simple-hero h1{font:800 clamp(56px,7vw,105px)/1.06 'Manrope',sans-serif;letter-spacing:-.075em;max-width:1050px;margin:33px 0 26px}
+.simple-home h1 em,.simple-home h2 em{font-family:'Playfair Display',Georgia,serif;color:#ddbd8a;font-weight:500}
+.simple-hero-content>p{max-width:600px;font-size:17px;line-height:1.85;color:#e0e2d8}
+.simple-actions{display:flex;gap:21px;flex-wrap:wrap;align-items:center;margin-top:37px}
+.simple-primary,.simple-secondary{display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:54px;font-size:14px;font-weight:700;transition:background-color .25s,transform .25s}
+.simple-primary{background:#d4af78;color:#122017;padding:15px 23px}
+.simple-primary:hover,.simple-primary:focus-visible{background:#f0cb90;transform:translateY(-2px)}
+.simple-secondary{border:1px solid rgba(231,217,185,.65);color:#f5efe2;padding:14px 20px}
+.simple-secondary:hover,.simple-secondary:focus-visible{background:rgba(255,255,255,.11)}
+.simple-hero-foot{margin-top:74px;font:700 10px 'Manrope',sans-serif;letter-spacing:.22em;color:#cfb995}
+.simple-explore{padding:110px 0 120px}
+.simple-section-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:38px}
+.simple-section-head p{font:800 11px 'Manrope',sans-serif;letter-spacing:.2em;color:#aa854c}
+.simple-section-head h2{font:700 clamp(36px,4.6vw,65px)/1.1 'Manrope',sans-serif;letter-spacing:-.065em;margin:18px 0 0}
+.simple-section-head h2 em{color:#ae8958}
+.simple-section-head>span{font-size:14px;color:#71776e;padding-bottom:8px}
+.simple-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.simple-page-card{min-height:310px;display:flex;flex-direction:column;padding:26px 23px;color:#243029;border:1px solid #dcd9cc;background:#faf8f1;transition:transform .25s,border-color .25s,box-shadow .25s}
+.simple-page-card:hover,.simple-page-card:focus-visible{transform:translateY(-5px);border-color:#b68f5b;box-shadow:0 18px 45px rgba(27,45,31,.09)}
+.simple-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#ae8958}
+.simple-card-top>span{font:700 9px 'Manrope',sans-serif;letter-spacing:.12em}
+.simple-page-card h3{font:700 27px/1.2 'Manrope',sans-serif;letter-spacing:-.045em;margin:43px 0 12px}
+.simple-page-card p{color:#636d62;font-size:13px;line-height:1.8;margin:0 0 28px}
+.simple-card-bottom{margin-top:auto;color:#966f3e;font-weight:700;font-size:12px;display:flex;align-items:center;gap:10px}
+.simple-more-links{display:flex;gap:32px;flex-wrap:wrap;border-top:1px solid #dcd9cc;margin-top:36px;padding-top:27px}
+.simple-more-links a{display:inline-flex;gap:9px;align-items:center;color:#243029;font-size:13px;font-weight:700}
+.simple-more-links a:hover{text-decoration:underline}
+.simple-invite{background:#10251c;color:#fff;padding:112px 0;text-align:center}
+.simple-invite-content{display:flex;flex-direction:column;align-items:center}
+.simple-invite-content>span{font:700 11px 'Manrope',sans-serif;letter-spacing:.18em;color:#dbb984}
+.simple-invite-content h2{font:750 clamp(54px,7vw,90px)/1.1 'Manrope',sans-serif;letter-spacing:-.07em;margin:26px 0}
+.simple-invite-content>p{max-width:570px;color:#d0d8cf;line-height:1.85;margin:0 0 27px}
+.simple-invite-content small{margin-top:16px;color:#aeb9ac}
+.simple-footer{background:#08140e;color:#e9e5d9;padding:34px 0 23px}
+.simple-footer-top,.simple-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.simple-footer-top{padding-bottom:30px}
+.simple-footer-top>span{font:700 10px 'Manrope',sans-serif;letter-spacing:.16em;color:#bba77d}
+.simple-footer-bottom{border-top:1px solid #344138;padding-top:21px;color:#aab4aa;font-size:11px}
+.simple-footer-bottom>div{display:flex;gap:22px;flex-wrap:wrap}
+.simple-footer-bottom a{color:#c5ceb9}
+@media(max-width:1100px){.simple-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-page-card{min-height:265px}}
+@media(max-width:720px){.simple-home .simple-hero{min-height:710px}.simple-hero-content{padding:165px 0 90px}.simple-home .simple-hero h1{font-size:clamp(48px,11vw,72px)}.simple-hero-content>p{font-size:15px}.simple-hero-photo{background-position:62% center}.simple-explore{padding:75px 0}.simple-section-head{display:block}.simple-section-head>span{display:block;margin-top:16px}.simple-card-grid{grid-template-columns:1fr}.simple-page-card{min-height:240px}.simple-page-card h3{margin-top:24px}.simple-footer-top,.simple-footer-bottom{align-items:start;flex-direction:column}.simple-invite{padding:80px 0}.simple-more-links{gap:20px}}
+@media(prefers-reduced-motion:reduce){.simple-primary,.simple-secondary,.simple-page-card{transition:none!important;transform:none!important}}
+
+/* Mobile navigation refinements for the simplified landing page. */
+.simple-home .menu-toggle{position:relative;z-index:3}
+.simple-home .navitems.active{z-index:4}
+.simple-home .simple-page-card:focus-visible,.simple-home .simple-primary:focus-visible,.simple-home .simple-secondary:focus-visible,.simple-home .simple-more-links a:focus-visible{outline:3px solid #d4af78;outline-offset:4px}
+@media(max-width:1250px){.simple-home .topbar .navitems{max-height:calc(100dvh - 90px);overflow-y:auto;overscroll-behavior:contain}}
+@media(max-width:700px){.simple-home .topbar .navitems{max-height:calc(100dvh - 78px)}.simple-home .simple-actions{align-items:stretch;flex-direction:column}.simple-home .simple-actions a{width:100%;justify-content:space-between}.simple-home .simple-hero-foot{margin-top:45px}.simple-home .simple-kicker{font-size:10px;letter-spacing:.12em}}
+
+/* Clear, indexable Birmingham worship context without changing the hero styling. */
+.seo-intro{background:#f6f3eb;padding:88px 0;color:#1e3027}
+.seo-intro-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:clamp(36px,6vw,90px);align-items:start}
+.seo-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:#796448;margin:0 0 18px}
+.seo-intro h2{font-size:clamp(35px,4.5vw,58px);font-weight:750;line-height:1.13;letter-spacing:-.05em;margin:0 0 25px}
+.seo-intro h2 em{font-style:italic;color:#8b7045}
+.seo-intro p{line-height:1.82;margin:0 0 15px;color:#47574c;font-size:15px}
+.seo-intro a{display:inline-flex;align-items:center;gap:8px;margin-top:12px;font-weight:750;color:#234b36;text-decoration:underline;text-underline-offset:4px}
+.seo-intro-aside{background:#e7e6dc;border:1px solid #d3d2c5;padding:30px}
+.seo-intro-aside h3{font-size:24px;letter-spacing:-.04em;margin:0 0 18px}
+.seo-intro-aside p{border-bottom:1px solid #d0cfc2;padding:0 0 10px}
+.seo-intro-aside p strong{color:#22352a}
+.seo-intro a:focus-visible{outline:3px solid #a17b3e;outline-offset:4px}
+@media(max-width:780px){.seo-intro{padding:63px 0}.seo-intro-grid{grid-template-columns:1fr;gap:28px}.seo-intro-aside{padding:24px}}
