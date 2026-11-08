@@ -4,11 +4,11 @@ import MotionExperience from "./motion-experience";
 
 const SITE_URL = "https://worship-unscripted-birmingham.vercel.app";
 const preview = process.env.VERCEL_ENV === "preview";
-const description = "Worship Unscripted Birmingham is an independent, interdenominational Christian worship initiative bringing people together for heartfelt worship, prayer and fellowship in Birmingham, UK.";
+const description = "Discover Worship Unscripted Birmingham, an emerging interdenominational Christian worship initiative centred on live praise, prayer, Scripture and fellowship.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Worship Unscripted Birmingham | Christian Worship & Prayer",
+  title: "Christian Worship in Birmingham | Worship Unscripted",
   description,
   applicationName: "Worship Unscripted Birmingham",
   verification: { google: "x8gQWazbPelLaTqUx3QiaGxomneQ1qmDUowDGMsAc80" },
@@ -46,10 +46,24 @@ const schema = {
   founder: { "@type": "Person", name: "Adeniyi Owolabi" }
 };
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": SITE_URL + "/#website",
+  name: "Worship Unscripted Birmingham",
+  url: SITE_URL,
+  inLanguage: "en-GB",
+  description,
+  publisher: { "@id": SITE_URL + "/#organization" }
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return <html lang="en-GB"><body>
     <script type="application/ld+json" dangerouslySetInnerHTML={{
       __html: JSON.stringify(schema).replace(/</g, "\\u003c")
+    }}/>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{
+      __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c")
     }}/>
     <MotionExperience/>{children}
   </body></html>;
