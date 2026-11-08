@@ -62,3 +62,12 @@ These are **candidate phrases**, not verified traffic or competition estimates. 
 Search Console impressions and clicks, branded searches, impressions for Birmingham worship-related queries, organic visits to /gatherings and /get-involved, and enquiries originating from search (when compliant tracking is configured). Do not promise rankings.
 
 References: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap and https://nextjs.org/docs/15/app/getting-started/metadata-and-og-images
+
+## Phase 4: on-page content and internal links (8 November 2026)
+- Added two visitor-focused questions to the Experience FAQ about a Birmingham Christian worship night and newcomers.
+- Clarified gathering-planning details and linked Gatherings to Experience and Contact.
+- Updated Community and Get Involved pages with accurate participation information and relevant contextual links.
+- Changed the shared inner-page registration calls to action to Gatherings / Get Involved because public registration remains closed pending approvals.
+- Kept the corrected homepage source unchanged. No confirmed event date, venue address, filming consent arrangement or ticket availability has been invented.
+- These changes are on the development branch for Preview testing; production publication requires separate review and approval.
+- After publication: review Search Console queries and indexing, then refine copy based on actual user search intent rather than unsupported keyword-volume claims.
