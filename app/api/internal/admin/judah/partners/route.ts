@@ -26,6 +26,39 @@ export async function POST(req:NextRequest) {
   location=field(b.location,160)||"Birmingham, UK",segment=field(b.segment,40)||"other",
   channel=field(b.contact_channel,300),source=field(b.source_url,500),notes=field(b.notes,3000),
   suitability=field(b.suitability,2500),provider=field(b.provider,24)||"manual";
+ if(action==="bulk-import"){
+  const sourceProvider=field(b.provider,24)||"manual";
+  const lines=typeof b.lines==="string"?b.lines:"";
+  if(!["manual","hunter","apollo","usegtm"].includes(sourceProvider)||!lines||
+    lines.length>8000||lines.split("\n").length>41)return judahJson({error:"Import at most 40 organisation lines"},400);
+  const records=lines.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const ready:Array<{name:string;url:string;segment:string}>=[];
+  for(const line of records){
+    const [name="",url="",group="other"] = line.split("|").map(x=>x.trim());
+    if(name.length<2||name.length>180||name.includes("@")||url.includes("@")||
+      url.length>300||(url&&!/^https:\/\/[a-z0-9.-]+(?:\/[^\s]*)?$/i.test(url))||
+      !segments.includes(group))return judahJson({error:"Invalid line. Use: Organisation | https://website | church"},400);
+    ready.push({name,url,segment:group});
+  }
+  try{
+    let inserted=0;
+    const db=judahDb();
+    const client=await db.connect();
+    try{
+      await client.query("BEGIN");
+      for(const row of ready){
+        const r=await client.query(`INSERT INTO public.judah_partners(organisation,website,segment,provider,source_url,notes)
+          SELECT $1,$2,$3,$4,NULL,'Imported organisation: research and permission review required'
+          WHERE NOT EXISTS(SELECT 1 FROM public.judah_partners WHERE lower(organisation)=lower($1))
+          RETURNING id`,[row.name,row.url||null,row.segment,sourceProvider]);
+        inserted+=r.rowCount||0;
+      }
+      await client.query("COMMIT");
+    }catch(e){await client.query("ROLLBACK");throw e}finally{client.release()}
+    await judahAudit("partner.bulk_import","partner",undefined,"Organisations added: "+inserted);
+    return judahJson({ok:true,added:inserted,skipped:ready.length-inserted});
+  }catch{return judahJson({error:"Could not import organisations"},503)}
+ }
  if(action==="create"||action==="edit"){
   if(!organisation||organisation.length>180||location.length>160||website.length>300||channel.length>300||source.length>500||
    notes.length>3000||suitability.length>2500||!segments.includes(segment)||!["manual","hunter","apollo","usegtm"].includes(provider))
