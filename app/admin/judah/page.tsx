@@ -81,7 +81,7 @@ export default function JudahStudio() {
           <label htmlFor="judah-topic" style={{ display:"block",fontWeight:700,marginBottom:8 }}>Topic or creative brief</label>
           <textarea id="judah-topic" value={topic} onChange={event=>setTopic(event.target.value)} maxLength={300} required rows={3} style={{ display:"block",width:"100%",padding:14,border:"1px solid #b3c0ba",borderRadius:10,resize:"vertical",font:"inherit",boxSizing:"border-box" }}/>
           <p style={{ fontSize:12, color:"#576864" }}>Do not enter participant names, email addresses or private details. Drafts are sent to the configured AI provider for processing.</p>
-          <button type="submit" disabled={loading||!state?.aiConfigured} style={{ ...styles.button, opacity:loading||!state?.aiConfigured?.6:1 }}>{loading?"JUDAH is drafting…":"Generate draft"}</button>
+          <button type="submit" disabled={loading||!state?.aiConfigured} style={{ ...styles.button, opacity:(loading || !state?.aiConfigured) ? 0.6 : 1 }}>{loading?"JUDAH is drafting…":"Generate draft"}</button>
           {!state?.aiConfigured && <p style={{ color:"#875c28" }}>AI generation requires Preview environment variables AI_GATEWAY_API_KEY and JUDAH_MODEL.</p>}
         </form>
         {error && <p role="alert" style={{ color:"#9d2830",marginTop:16 }}>{error}</p>}
