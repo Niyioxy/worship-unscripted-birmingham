@@ -27,7 +27,7 @@ export default function JudahStudio(){
  const [campaignTitle,setCampaignTitle]=useState(""),[subject,setSubject]=useState(""),[message,setMessage]=useState(""),[audience,setAudience]=useState("all");
  const [date,setDate]=useState("");
  const [organisation,setOrganisation]=useState(""),[website,setWebsite]=useState(""),[segment,setSegment]=useState("church"),[sourceUrl,setSourceUrl]=useState(""),[notes,setNotes]=useState("");
- const [provider,setProvider]=useState("apollo"),[search,setSearch]=useState(""),[suggestions,setSuggestions]=useState<Discovery[]>([]);
+ const [provider,setProvider]=useState("apollo"),[search,setSearch]=useState(""),[suggestions,setSuggestions]=useState<Discovery[]>([]),[partnerProvider,setPartnerProvider]=useState("manual");
  async function json(url:string,options?:RequestInit){
    const response=await fetch(url,{cache:"no-store",...options});
    const out=await response.json() as Record<string,unknown>;
@@ -53,7 +53,7 @@ export default function JudahStudio(){
  async function generate(e:FormEvent){e.preventDefault();setDraft("");const r=await post("/api/internal/admin/judah",{task,topic});if(r?.draft&&typeof r.draft==="string"){setDraft(r.draft);setDraftTitle(task==="blog"?topic:task==="social"?"Social posts: "+topic:"Follow-up: "+topic);setDraftChannel(task==="social"?"instagram":task==="followup"?"email":"website")}}
  async function saveDraft(){if(!draft.trim())return;await post("/api/internal/admin/judah/workspace",{action:"content-create",kind:task==="followup"?"email":task,title:draftTitle,body:draft,channel:draftChannel})}
  async function createCampaign(e:FormEvent){e.preventDefault();await post("/api/internal/admin/judah/workspace",{action:"campaign-create",title:campaignTitle,subject,body:message,audience})}
- async function createPartner(e:FormEvent){e.preventDefault();await post("/api/internal/admin/judah/partners",{action:"create",organisation,website,segment,source_url:sourceUrl,notes,location:"Birmingham, UK"})}
+ async function createPartner(e:FormEvent){e.preventDefault();await post("/api/internal/admin/judah/partners",{action:"create",organisation,website,segment,source_url:sourceUrl,notes,provider:partnerProvider,location:"Birmingham, UK"})}
  async function discover(e:FormEvent){e.preventDefault();const r=await post("/api/internal/admin/judah/discover",{provider,query:search});if(r)setSuggestions((r.results||[]) as Discovery[])}
  const stat=data?.registrations;
  return <main style={{minHeight:"100vh",background:"#f5f3ed",color:"#18342e",fontFamily:"system-ui,sans-serif",padding:"30px max(18px,calc((100vw - 1180px)/2)) 90px"}}>
@@ -112,6 +112,7 @@ export default function JudahStudio(){
    </div>}
    {tab==="campaigns"&&<div style={{display:"grid",gap:18}}>
     <section style={pane}><h2>Prepare a follow-up campaign</h2>
+     <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:10}}>{([["Welcome message","Welcome to Worship Unscripted Birmingham","Thank you for expressing interest in Worship Unscripted Birmingham. We are preparing a small, Christ-centred worship gathering in Birmingham. The venue and date are not yet confirmed. We will share confirmed updates when available. Thank you for being part of the vision."],["Gathering announcement","Worship Unscripted Birmingham: gathering update","We are preparing a gathering and will share the date, venue, accessibility information and registration arrangements once they are confirmed. Please check our gatherings page for the latest accurate information."],["Volunteer introduction","Thank you for offering to serve","Thank you for your interest in supporting Worship Unscripted Birmingham. We are still shaping the team and will contact interested people with confirmed next steps when the arrangements have been approved."],["After-event thanks","Thank you for worshipping with us","Thank you for joining the gathering. We would love to hear what was meaningful for you and how we can make future gatherings welcoming and accessible. Please reply only if you wish to share feedback."]] as const).map(([name,headline,body])=><button key={name} type="button" style={{...action,background:"#e5ede7",color:"#204b43"}} onClick={()=>{setCampaignTitle(name);setSubject(headline);setMessage(body);}}>{name}</button>)}</div>
      <p>Build an email, review its content, approve it and set a proposed delivery time. Scheduling prepares a consent-filtered queue, but real sending is blocked until separately approved.</p>
      <form onSubmit={createCampaign}>
       <label style={label}>Internal campaign title</label><input required maxLength={180} style={fieldStyle} value={campaignTitle} onChange={e=>setCampaignTitle(e.target.value)}/>
@@ -131,6 +132,8 @@ export default function JudahStudio(){
        {c.send_after&&<p style={{fontSize:12}}>Scheduled for {new Date(c.send_after).toLocaleString("en-GB")}</p>}
        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
         {c.status==="draft"&&<button disabled={busy} style={action} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-approve",id:c.id})}>Approve</button>}
+        {c.status==="approved"&&c.audience==="all"&&<button disabled={busy} style={{...action,background:"#396d55"}} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-welcome-enable",id:c.id})}>Prepare automated welcome template</button>}
+        {c.status==="scheduled"&&c.send_after&&<button disabled={busy} style={{...action,background:"#956847"}} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-welcome-disable",id:c.id})}>Disable welcome automation (if enabled)</button>}
         {c.status==="approved"&&<button disabled={busy||!date} style={action} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-schedule",id:c.id,sendAfter:new Date(date).toISOString()})}><CalendarDays size={14} style={{display:"inline"}}/> Prepare schedule</button>}
         {["approved","scheduled"].includes(c.status)&&<button disabled={busy} style={{...action,background:"#866d38"}} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-pause",id:c.id})}>Pause</button>}
         {c.status!=="completed"&&c.status!=="archived"&&<button disabled={busy} style={{...action,background:"#776763"}} onClick={()=>void post("/api/internal/admin/judah/workspace",{action:"campaign-archive",id:c.id})}>Archive</button>}
@@ -149,7 +152,7 @@ export default function JudahStudio(){
      </form>
      <p style={{fontSize:12}}>Provider credentials: Apollo {partners?.providers.apollo?"configured":"not configured"} · Hunter {partners?.providers.hunter?"configured":"not configured"}. Searches may consume provider credits. useGTM is supported as a manually attributed source pending API verification.</p>
      {suggestions.map((s,i)=><article key={i} style={{padding:12,background:"#eef3ed",marginTop:10,borderRadius:9}}>
-      <strong>{s.name}</strong><p style={{margin:"5px 0"}}>{s.website} · {s.location} · {s.provider}</p><button style={action} onClick={()=>{setOrganisation(s.name);setWebsite(s.website);setSourceUrl(s.source);setNotes(s.description);setSuggestions([])}}>Review in partner form</button>
+      <strong>{s.name}</strong><p style={{margin:"5px 0"}}>{s.website} · {s.location} · {s.provider}</p><button style={action} onClick={()=>{setOrganisation(s.name);setWebsite(s.website);setSourceUrl(s.source);setNotes(s.description);setPartnerProvider(s.provider);setSuggestions([])}}>Review in partner form</button>
      </article>)}
     </section>
     <section style={pane}><h2>Add a potential partner</h2>
@@ -157,6 +160,7 @@ export default function JudahStudio(){
       <label style={label}>Organisation</label><input required maxLength={180} style={fieldStyle} value={organisation} onChange={e=>setOrganisation(e.target.value)}/>
       <label style={label}>Organisation website (HTTPS)</label><input type="url" style={fieldStyle} value={website} onChange={e=>setWebsite(e.target.value)} placeholder="https://..."/>
       <label style={label}>Segment</label><select style={fieldStyle} value={segment} onChange={e=>setSegment(e.target.value)}>{["church","worship_team","studio","community","sponsor","other"].map(s=><option key={s} value={s}>{s}</option>)}</select>
+      <label style={label}>Lead source</label><select style={fieldStyle} value={partnerProvider} onChange={e=>setPartnerProvider(e.target.value)}>{["manual","apollo","hunter","usegtm"].map(p=><option key={p} value={p}>{p}</option>)}</select>
       <label style={label}>Research source URL</label><input type="url" style={fieldStyle} value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="https://..."/>
       <label style={label}>Why might they be a fit?</label><textarea rows={3} style={fieldStyle} maxLength={3000} value={notes} onChange={e=>setNotes(e.target.value)}/>
       <p><button style={action} disabled={busy}>Save for research</button></p>
