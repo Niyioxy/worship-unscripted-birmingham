@@ -23,6 +23,8 @@ jobs:
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Typecheck
         run: npx tsc --noEmit --incremental false
+      - name: JUDAH smoke tests
+        run: node --test tests/judah-contract.test.mjs
       - name: Build
         run: npm run build
         env:
