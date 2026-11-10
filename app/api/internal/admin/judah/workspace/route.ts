@@ -95,6 +95,29 @@ export async function POST(req:NextRequest) {
       await judahAudit("campaign.approved","campaign",id);
       return judahJson({ok:true});
     }
+    if(action==="campaign-welcome-enable"){
+      if(!id)return judahJson({error:"Invalid campaign"},400);
+      // A welcome template is a prepared automation, not an authorisation to deliver.
+      const result=await db.query(`UPDATE public.judah_campaigns SET
+        automation_key='welcome_opted_in',evergreen=TRUE,status='scheduled',
+        send_after=now(),updated_at=now()
+        WHERE id=$1 AND status='approved' AND audience='all' RETURNING id`,[id]);
+      if(!result.rowCount)return judahJson({error:"Only approved all-category emails can become welcome templates, and one template may already be active"},409);
+      await judahAudit("campaign.welcome_template_prepared","campaign",id);
+      return judahJson({ok:true,deliveryEnabled:false});
+    }
+    if(action==="campaign-welcome-disable"){
+      if(!id)return judahJson({error:"Invalid campaign"},400);
+      const client=await db.connect();
+      try{
+        await client.query("BEGIN");
+        await client.query("UPDATE public.judah_campaigns SET status='paused',evergreen=FALSE,automation_key=NULL,updated_at=now() WHERE id=$1 AND automation_key='welcome_opted_in'",[id]);
+        await client.query("UPDATE public.judah_deliveries SET status='suppressed',updated_at=now() WHERE campaign_id=$1 AND status='queued'",[id]);
+        await client.query("COMMIT");
+      }catch(error){await client.query("ROLLBACK");throw error}finally{client.release()}
+      await judahAudit("campaign.welcome_template_disabled","campaign",id);
+      return judahJson({ok:true});
+    }
     if(action==="campaign-pause"||action==="campaign-archive"){
       if(!id)return judahJson({error:"Invalid campaign"},400);
       const next=action==="campaign-pause"?"paused":"archived";
