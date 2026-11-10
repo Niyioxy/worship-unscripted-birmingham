@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/judah",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
