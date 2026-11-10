@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { Pool } from "pg";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -42,23 +42,28 @@ export function judahEmailStatus() {
     sendingEnabled: process.env.JUDAH_EMAIL_ENABLED === "true"
   };
 }
-export function judahMailToken(email: string) {
-  const secret = process.env.JUDAH_UNSUBSCRIBE_SECRET;
-  if (!secret || secret.length < 32) throw new Error("Unsubscribe signing secret missing");
-  const payload = Buffer.from(email.trim().toLowerCase(),"utf8").toString("base64url");
-  return payload + "." + createHmac("sha256",secret).update(payload).digest("base64url");
+// Authenticated encryption keeps subscriber emails out of public URL parameters and logs.
+function mailKey() {
+  const secret=process.env.JUDAH_UNSUBSCRIBE_SECRET;
+  if(!secret||secret.length<32)throw new Error("Unsubscribe secret missing");
+  return createHash("sha256").update(secret).digest();
 }
-export function verifyJudahMailToken(token: string) {
-  const secret = process.env.JUDAH_UNSUBSCRIBE_SECRET;
-  if (!secret || secret.length < 32 || token.length > 600) return null;
-  const parts = token.split(".");
-  if (parts.length !== 2 || !/^[A-Za-z0-9_-]+$/.test(parts[0]) ||
-    !/^[A-Za-z0-9_-]+$/.test(parts[1])) return null;
-  const expected = createHmac("sha256", secret).update(parts[0]).digest();
-  const received = Buffer.from(parts[1],"base64url");
-  if (expected.length !== received.length || !timingSafeEqual(expected,received)) return null;
-  const email = Buffer.from(parts[0],"base64url").toString("utf8");
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length<=254 ? email : null;
+export function judahMailToken(email:string) {
+  const iv=randomBytes(12);
+  const cipher=createCipheriv("aes-256-gcm",mailKey(),iv);
+  const data=Buffer.concat([cipher.update(email.trim().toLowerCase(),"utf8"),cipher.final()]);
+  return Buffer.concat([iv,cipher.getAuthTag(),data]).toString("base64url");
+}
+export function verifyJudahMailToken(token:string) {
+  if(token.length>600||!token||!/^[A-Za-z0-9_-]+$/.test(token))return null;
+  try {
+    const raw=Buffer.from(token,"base64url");
+    if(raw.length<29)return null;
+    const decipher=createDecipheriv("aes-256-gcm",mailKey(),raw.subarray(0,12));
+    decipher.setAuthTag(raw.subarray(12,28));
+    const email=Buffer.concat([decipher.update(raw.subarray(28)),decipher.final()]).toString("utf8");
+    return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)&&email.length<=254?email:null;
+  }catch{return null}
 }
 export async function judahAudit(action: string, kind?: string, id?: number, detail?: string) {
   await judahDb().query(
