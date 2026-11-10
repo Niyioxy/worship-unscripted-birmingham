@@ -26,7 +26,7 @@ export default function JudahStudio(){
  const [draft,setDraft]=useState(""),[draftTitle,setDraftTitle]=useState(""),[draftChannel,setDraftChannel]=useState("website");
  const [campaignTitle,setCampaignTitle]=useState(""),[subject,setSubject]=useState(""),[message,setMessage]=useState(""),[audience,setAudience]=useState("all");
  const [date,setDate]=useState("");
- const [organisation,setOrganisation]=useState(""),[website,setWebsite]=useState(""),[segment,setSegment]=useState("church"),[sourceUrl,setSourceUrl]=useState(""),[notes,setNotes]=useState("");
+ const [organisation,setOrganisation]=useState(""),[website,setWebsite]=useState(""),[segment,setSegment]=useState("church"),[sourceUrl,setSourceUrl]=useState(""),[notes,setNotes]=useState(""),[bulkList,setBulkList]=useState("");
  const [provider,setProvider]=useState("apollo"),[search,setSearch]=useState(""),[suggestions,setSuggestions]=useState<Discovery[]>([]),[partnerProvider,setPartnerProvider]=useState("manual");
  async function json(url:string,options?:RequestInit){
    const response=await fetch(url,{cache:"no-store",...options});
@@ -165,6 +165,12 @@ export default function JudahStudio(){
       <label style={label}>Why might they be a fit?</label><textarea rows={3} style={fieldStyle} maxLength={3000} value={notes} onChange={e=>setNotes(e.target.value)}/>
       <p><button style={action} disabled={busy}>Save for research</button></p>
      </form>
+    </section>
+    <section style={pane}><h2>Import organisation research</h2>
+     <p>For exports or research from Apollo, Hunter or useGTM, paste up to 40 organisation-level rows. Never include people's names or personal email addresses.</p>
+     <p style={{fontSize:12}}>Format: Organisation | https://website | church</p>
+     <label style={label}>Organisation list</label><textarea rows={6} style={fieldStyle} value={bulkList} onChange={e=>setBulkList(e.target.value)} placeholder={"Example Church | https://example.org | church\\nExample Studio | https://studio.example | studio"}/>
+     <p><button disabled={busy||!bulkList.trim()} style={action} onClick={()=>void post("/api/internal/admin/judah/partners",{action:"bulk-import",provider:partnerProvider,lines:bulkList})}>Import organisations for review</button></p>
     </section>
     <section style={pane}><h2>Partnership pipeline ({partners?.partners.length??0})</h2>
      {partners?.partners.length?partners.partners.map(p=><article key={p.id} style={{padding:"14px 0",borderTop:"1px solid #ddd"}}>
