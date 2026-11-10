@@ -1,5 +1,6 @@
 import {validateInterestSubmission,savePublicInterestSubmission,SPECIAL_CATEGORY_CONSENT_VERSION} from "../../../lib/interest-submission";
 import {NextRequest,NextResponse} from "next/server";
+import {judahWelcomeEnrolment} from "../../../lib/judah-onboarding";
 import {Pool} from "pg";
 
 export const runtime="nodejs";
@@ -66,6 +67,7 @@ export async function POST(req:NextRequest){
     await client.query("SET LOCAL statement_timeout = '5000ms'");
     await savePublicInterestSubmission(client,entry,SPECIAL_CATEGORY_CONSENT_VERSION);
     await client.query("COMMIT");began=false;
+    if(entry.updates) await judahWelcomeEnrolment(db(),entry.email);
     return reply({ok:true});
   }catch(e){
     console.error("Registration save failed",e instanceof Error?e.message:"unknown");
