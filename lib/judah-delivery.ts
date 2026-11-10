@@ -86,7 +86,7 @@ export async function judahDispatchDue(maxCount=10):Promise<MailStats> {
   }
   // Mark completed only if every queued/sending delivery has been handled; failed deliveries stay visible.
   await judahDb().query(`UPDATE public.judah_campaigns c SET status='completed',updated_at=now()
-    WHERE status='scheduled' AND send_after<=now()
+    WHERE status='scheduled' AND evergreen=FALSE AND send_after<=now()
       AND NOT EXISTS (SELECT 1 FROM public.judah_deliveries d WHERE d.campaign_id=c.id AND d.status IN ('queued','sending'))`);
   return out;
 }
