@@ -15,7 +15,7 @@ export default function AdminDashboard(){
   const [setupLoaded,setSetupLoaded]=useState(false);
   const [setupError,setSetupError]=useState("");
   const email="adeniyi.tosin@harvestflows.com";
-  useEffect(()=>{void fetch("/api/internal/admin/credentials",{cache:"no-store"}).then(async r=>{const j=await r.json();if(r.ok){setSetupRequired(!!j.setupRequired);setSetupError("");}else setSetupError(j.error||"Unable to check account setup");}).catch(()=>setSetupError("Unable to check account setup")).finally(()=>setSetupLoaded(true));void fetch("/api/internal/admin/session",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j.authenticated)void load("all",1)}).catch(()=>{});},[]);
+  useEffect(()=>{void fetch("/api/internal/admin/credentials",{cache:"no-store"}).then(async r=>{const j=await r.json();if(r.ok){setSetupRequired(!!j.setupRequired);setSetupError(j.adminSecretReady===false?"ADMIN_API_SECRET is missing or shorter than 32 characters for this Preview deployment. Check the value length and branch scope in Vercel, then redeploy.":"");}else setSetupError(j.error||"Unable to check account setup");}).catch(()=>setSetupError("Unable to check account setup")).finally(()=>setSetupLoaded(true));void fetch("/api/internal/admin/session",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j.authenticated)void load("all",1)}).catch(()=>{});},[]);
 
   const [data,setData]=useState<Result|null>(null);
   const [filter,setFilter]=useState<Interest>("all");
