@@ -12,12 +12,13 @@ function sessionResponse(){const session=createSession();const response=reply({a
 export async function GET(){
  if(process.env.VERCEL_ENV!=="preview")return reply({error:"Not found"},404);
  if(!process.env.DATABASE_URL)return reply({error:"Database not configured"},503);
- try{const result=await db().query("SELECT 1 FROM public.worship_admin_accounts WHERE email=$1",[EMAIL]);return reply({setupRequired:result.rowCount===0,email:EMAIL});}
+ try{const result=await db().query("SELECT 1 FROM public.worship_admin_accounts WHERE email=$1",[EMAIL]);return reply({setupRequired:result.rowCount===0,email:EMAIL,adminSecretReady:configured(),databaseReady:true});}
  catch{return reply({error:"Admin database migration required"},503);}
 }
 export async function POST(request:NextRequest){
  if(process.env.VERCEL_ENV!=="preview")return reply({error:"Not found"},404);
- if(!configured()||!process.env.DATABASE_URL)return reply({error:"Admin authentication not configured"},503);
+ if(!process.env.DATABASE_URL)return reply({error:"Admin database connection is missing from this deployment"},503);
+ if(!configured())return reply({error:"Admin session secret is missing or shorter than 32 characters in this Preview deployment"},503);
  if(!sameOrigin(request))return reply({error:"Forbidden"},403);
  const raw=await request.text();
  if(raw.length>4096)return reply({error:"Request too large"},413);
