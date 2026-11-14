@@ -84,7 +84,26 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(25000),
       cache: "no-store"
     });
-    if (!response.ok) return respond({ error: "AI service unavailable. Check gateway configuration or credits." }, 502);
+    if (!response.ok) {
+      // Expose only a safe, actionable category. Never return keys, request headers,
+      // provider payloads, or raw upstream error messages to the browser.
+      const detail: Record<number,string> = {
+        400:"The AI Gateway rejected the request. Check JUDAH_MODEL is a supported model ID.",
+        401:"AI Gateway authentication failed. Check the API key belongs to the correct Vercel team and is active.",
+        402:"AI Gateway credits or budget are insufficient. Check billing and spending limits.",
+        403:"AI Gateway access is denied. Check key permissions, team ownership and model restrictions.",
+        404:"The selected JUDAH_MODEL was not found or is not supported.",
+        408:"AI Gateway timed out. Try again later.",
+        422:"AI Gateway rejected the model or prompt settings. Check model compatibility.",
+        429:"AI Gateway rate limit reached. Check the rate-limit dashboard before retrying.",
+        503:"AI provider temporarily unavailable. Check provider status or select another supported model."
+      };
+      const reason=detail[response.status] || (
+        response.status>=500?"The AI provider is temporarily unavailable.":"AI Gateway rejected the request."
+      );
+      console.error("JUDAH gateway request failed", { status:response.status });
+      return respond({ error:reason, gatewayStatus:response.status }, 502);
+    }
     const result: unknown = await response.json();
     const choices = (result as { choices?: Array<{ message?: { content?: unknown } }> }).choices;
     const draft = choices?.[0]?.message?.content;
