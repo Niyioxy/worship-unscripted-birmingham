@@ -9,7 +9,7 @@ type Stats={total:number;attend:number;music:number;volunteer:number;opted_in:nu
 type Content={id:number;kind:string;title:string;body:string;status:string;channel:string};
 type Campaign={id:number;title:string;subject:string;body:string;audience:string;status:string;send_after:string|null};
 type Partner={id:number;organisation:string;website:string|null;location:string;segment:string;status:string;outreach_basis:string;contact_channel:string|null;provider:string;source_url:string|null;notes:string;suitability:string};
-type Workspace={ok:true;content:Content[];campaigns:Campaign[];registrations:Stats;activity:Array<{action:string;created_at:string}>;email:{ready:boolean;providerConfigured:boolean;privacyApproved:boolean;sendingEnabled:boolean};aiConfigured:boolean;delivery:Array<{campaign_id:number;total:number;sent:number;queued:number;failed:number;suppressed:number}>};
+type Workspace={ok:true;content:Content[];campaigns:Campaign[];registrations:Stats;activity:Array<{action:string;created_at:string}>;email:{ready:boolean;providerConfigured:boolean;privacyApproved:boolean;sendingEnabled:boolean};aiConfigured:boolean;aiReadiness?:{gatewayKeyPresent:boolean;modelPresent:boolean;previewBranch:boolean};delivery:Array<{campaign_id:number;total:number;sent:number;queued:number;failed:number;suppressed:number}>};
 type PartnerWorkspace={partners:Partner[];providers:{apollo:boolean;hunter:boolean;usegtm:boolean};summary:Array<{status:string;count:number}>};
 type Discovery={name:string;website:string;location:string;provider:"apollo"|"hunter";source:string;description:string};
 const pane={padding:22,background:"#ffffff",border:"1px solid #e2e2d8",borderRadius:16} as const;
@@ -89,7 +89,7 @@ export default function JudahStudio(){
       <textarea id="judah-topic" rows={3} maxLength={300} required style={fieldStyle} value={topic} onChange={e=>setTopic(e.target.value)}/>
       <p style={{fontSize:12}}>Do not include names, email addresses or private attendee data in AI prompts.</p>
       <button disabled={busy||!data?.aiConfigured} style={{...action,opacity:(busy||!data?.aiConfigured)?0.6:1}}>{busy?"Working…":"Generate with JUDAH"}</button>
-      {!data?.aiConfigured&&<p style={{color:"#8a6339"}}>Requires AI_GATEWAY_API_KEY and JUDAH_MODEL in Preview.</p>}
+      {!data?.aiConfigured&&<p style={{color:"#8a6339"}}>AI connection: API key {data?.aiReadiness?.gatewayKeyPresent?"detected":"missing"} · model {data?.aiReadiness?.modelPresent?"detected":"missing"} · JUDAH branch {data?.aiReadiness?.previewBranch?"confirmed":"not confirmed"}. Check settings are scoped to feature/judah-agent-v1.</p>}
      </form>
      {draft&&<div style={{paddingTop:16}}><h3>Review generated draft</h3>
       <label style={label}>Draft title</label><input style={fieldStyle} value={draftTitle} onChange={e=>setDraftTitle(e.target.value)}/>
