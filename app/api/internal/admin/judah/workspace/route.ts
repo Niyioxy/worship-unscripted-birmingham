@@ -28,7 +28,8 @@ export async function GET(req:NextRequest) {
     return judahJson({ok:true,content:content.rows,campaigns:campaigns.rows,
       delivery:delivery.rows,activity:audit.rows,registrations:registrations.rows[0],
       email:judahEmailStatus(),
-      aiConfigured:Boolean(process.env.AI_GATEWAY_API_KEY&&process.env.JUDAH_MODEL)});
+      aiConfigured:Boolean(process.env.AI_GATEWAY_API_KEY&&process.env.JUDAH_MODEL),
+      aiReadiness:{gatewayKeyPresent:Boolean(process.env.AI_GATEWAY_API_KEY?.trim()),modelPresent:Boolean(process.env.JUDAH_MODEL?.trim()),previewBranch:process.env.VERCEL_GIT_COMMIT_REF==="feature/judah-agent-v1"}});
   } catch(error) {
     console.error("JUDAH workspace read failed",error instanceof Error?error.message:"unknown");
     return judahJson({error:"JUDAH database migration 005 or database access is required"},503);
