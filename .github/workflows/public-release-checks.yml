@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - release/seo-phase-4-content
+      - release/first-worship-article
   workflow_dispatch:
 permissions:
   contents: read
