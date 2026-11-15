@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import {blogBlocked,blogReply,clean} from "@/lib/blog-manager";
+import {blogBlocked,blogReply,blogDb,blogFingerprint,clean} from "@/lib/blog-manager";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
@@ -31,6 +31,17 @@ export async function POST(req:NextRequest){
   seo:`Improve the following article's title-related phrasing, headings, scannability and natural search relevance for Birmingham readers without keyword stuffing or changing facts. Return the revised article text only. Article:\n${current}`
  } as const;
  const model=process.env.BLOG_AI_MODEL||"gpt-6-luna";
+ try {
+  // Limit billable calls to 15 per editor/browser fingerprint per hour.
+  const usage=await blogDb().query(`INSERT INTO public.wu_blog_ai_usage(fingerprint,requests,window_started,updated_at)
+     VALUES($1,1,now(),now())
+     ON CONFLICT(fingerprint) DO UPDATE SET
+      requests=CASE WHEN public.wu_blog_ai_usage.window_started < now()-interval '1 hour' THEN 1 ELSE public.wu_blog_ai_usage.requests+1 END,
+      window_started=CASE WHEN public.wu_blog_ai_usage.window_started < now()-interval '1 hour' THEN now() ELSE public.wu_blog_ai_usage.window_started END,
+      updated_at=now()
+     RETURNING requests`,[blogFingerprint(req)]);
+  if(Number(usage.rows[0]?.requests)>15)return blogReply({error:"AI writing limit reached (15 requests per hour). Try again later."},429);
+ } catch { return blogReply({error:"AI usage safeguards are not configured. Run migration 010 in the Preview database."},503) }
  try{
   const response=await fetch("https://api.openai.com/v1/responses",{
    method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},
