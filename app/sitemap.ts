@@ -12,7 +12,9 @@ const pages: { path: string; priority: number; frequency: "weekly" | "monthly" }
   { path: "/get-involved", priority: 0.8, frequency: "monthly" },
   { path: "/community", priority: 0.7, frequency: "monthly" },
   { path: "/gatherings", priority: 0.9, frequency: "weekly" },
-  { path: "/contact", priority: 0.6, frequency: "monthly" }
+  { path: "/contact", priority: 0.6, frequency: "monthly" },
+  { path: "/blog", priority: 0.7, frequency: "monthly" },
+  { path: "/blog/why-worship-unscripted-birmingham-exists", priority: 0.8, frequency: "monthly" }
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
