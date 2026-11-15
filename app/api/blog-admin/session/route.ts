@@ -1,10 +1,10 @@
 import type { NextRequest } from "next/server";
-import { blogAuthReady, blogAuthenticated, blogBlocked, blogDb, blogFingerprint, blogOriginValid, blogPasswordMatches, blogReply, blogSessionCookie, newBlogSession } from "@/lib/blog-manager";
+import { blogAuthReady, blogSetupStatus, blogAuthenticated, blogBlocked, blogDb, blogFingerprint, blogOriginValid, blogPasswordMatches, blogReply, blogSessionCookie, newBlogSession } from "@/lib/blog-manager";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
 export async function GET(req:NextRequest) {
- return blogReply({configured:blogAuthReady(),signedIn:blogAuthenticated(req)});
+ return blogReply({configured:blogAuthReady(),signedIn:blogAuthenticated(req),setup:process.env.VERCEL_ENV === "preview" ? blogSetupStatus() : undefined});
 }
 
 export async function POST(req:NextRequest) {
