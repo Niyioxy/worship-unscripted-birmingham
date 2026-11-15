@@ -6,7 +6,7 @@ export const dynamic="force-dynamic";
 const SYSTEM=`You are the human editor's writing assistant for Worship Unscripted Birmingham, an emerging, independent, Christ-centred interdenominational worship initiative in Birmingham, UK. Help write thoughtful, original, warm, natural British-English articles. Convey worship, prayer, Scripture, unity, fellowship, music and service. Do not fabricate dates, guests, venue bookings, participant testimonials, attendance counts, Bible quotations, partners or confirmed programmes. The first studio gathering is still provisional. It is not a new church. Do not promise registration. If discussing biblical passages, reference carefully and avoid invented word-for-word quotes. Return only the requested article text in plain text with optional headings starting '## '. No HTML, JSON, markdown links or code fences. Human editorial review required.`;
 export async function GET(req:NextRequest){
  const blocked=blogBlocked(req);if(blocked)return blocked;
- return blogReply({configured:Boolean(process.env.BLOG_OPENAI_API_KEY),model:process.env.BLOG_AI_MODEL||"gpt-6-luna"});
+ return blogReply({configured:Boolean(process.env.BLOG_OPENAI_API_KEY),model:process.env.BLOG_AI_MODEL||"gpt-4.1-mini"});
 }
 export async function POST(req:NextRequest){
  const blocked=blogBlocked(req,true);if(blocked)return blocked;
@@ -19,6 +19,8 @@ export async function POST(req:NextRequest){
  const action=clean(data.action,20);
  const topic=clean(data.topic,500);
  const current=clean(data.current,11000);
+ const currentTitle=clean(data.title,180);
+ const currentExcerpt=clean(data.excerpt,300);
  const tone=clean(data.tone,80)||"warm, inspiring and conversational";
  const length=clean(data.length,25)||"medium";
  if(!["draft","improve","expand","shorten","seo"].includes(action))return blogReply({error:"Unknown writing action"},400);
@@ -30,7 +32,17 @@ export async function POST(req:NextRequest){
   shorten:`Condense this article while preserving its central message, clarity and faithfulness to its facts. Article:\n${current}`,
   seo:`Improve the following article's title-related phrasing, headings, scannability and natural search relevance for Birmingham readers without keyword stuffing or changing facts. Return the revised article text only. Article:\n${current}`
  } as const;
- const model=process.env.BLOG_AI_MODEL||"gpt-6-luna";
+ // Ask for all editorial fields in one response. Keep generated metadata
+ // editable and never save it without a separate editor action.
+ const metadataInstructions=`Respond with ONE valid JSON object, with exactly four string keys: title, slug, excerpt, body.
+ title: useful, clear, accurate article title (max 180 characters).
+ slug: lowercase hyphenated URL phrase from title, max 120 characters, only a-z, 0-9 and hyphens.
+ excerpt: a compelling, faithful 120-160 character summary suitable for SEO and blog listings (max 300 characters).
+ body: the complete article, plain text with optional ## headings. No HTML or markdown links.
+ Keep any existing article facts; avoid invented claims or events. No JSON markdown code fences.
+ Existing title if applicable: ${currentTitle}
+ Existing description if applicable: ${currentExcerpt}.`;
+ const model=process.env.BLOG_AI_MODEL||"gpt-4.1-mini";
  try {
   // Limit billable calls to 15 per editor/browser fingerprint per hour.
   const usage=await blogDb().query(`INSERT INTO public.wu_blog_ai_usage(fingerprint,requests,window_started,updated_at)
@@ -45,7 +57,7 @@ export async function POST(req:NextRequest){
  try{
   const response=await fetch("https://api.openai.com/v1/responses",{
    method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},
-   body:JSON.stringify({model,instructions:SYSTEM,input:instructions[action as keyof typeof instructions],max_output_tokens:2200,store:false}),
+   body:JSON.stringify({model,instructions:SYSTEM+"\\n\\n"+metadataInstructions,input:instructions[action as keyof typeof instructions],max_output_tokens:2800,store:false}),
    signal:AbortSignal.timeout(45000),cache:"no-store"
   });
   if(!response.ok){
@@ -55,6 +67,16 @@ export async function POST(req:NextRequest){
   const payload=await response.json() as {output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;status?:string};
   const result=(payload.output||[]).flatMap(o=>o.content||[]).filter(v=>v.type==="output_text"&&typeof v.text==="string").map(v=>v.text||"").join("\n").trim();
   if(result.length<30)return blogReply({error:"The AI returned no usable article. Try again with a clearer topic."},502);
-  return blogReply({ok:true,text:result.slice(0,20000),model});
+  let parsed:Record<string,unknown>;
+  try{
+   parsed=JSON.parse(result.replace(/^\x60\x60\x60(?:json)?\\s*/i,"").replace(/\\s*\x60\x60\x60$/,"")) as Record<string,unknown>;
+  }catch{return blogReply({error:"The AI returned an incomplete article. Please click Generate again."},502)}
+  const bodyText=clean(parsed.body,20000);
+  const articleTitle=clean(parsed.title,180);
+  const excerpt=clean(parsed.excerpt,300);
+  const slug=clean(parsed.slug,120);
+  if(bodyText.length<50||!articleTitle||!excerpt||!slug||!(/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)))
+    return blogReply({error:"The AI response was missing a valid title, URL, description or article. Try again."},502);
+  return blogReply({ok:true,article:{title:articleTitle,slug,excerpt,body:bodyText},model});
  }catch{return blogReply({error:"The AI request timed out or the provider is unavailable. Try again."},503)}
 }
