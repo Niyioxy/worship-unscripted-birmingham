@@ -11,6 +11,7 @@ const label={display:"block",fontWeight:700,fontSize:13,margin:"18px 0 8px"} as 
 function slugify(s:string){return s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 -]/g,"").trim().replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,120)}
 export default function BlogManager(){
  const [ready,setReady]=useState<boolean|null>(null),[signedIn,setSignedIn]=useState(false),[password,setPassword]=useState("");
+ const [setup,setSetup]=useState<Record<string,string>|null>(null);
  const [posts,setPosts]=useState<Post[]>([]),[selected,setSelected]=useState<number|null>(null);
  const [title,setTitle]=useState(""),[slug,setSlug]=useState(""),[excerpt,setExcerpt]=useState(""),[body,setBody]=useState("");
  const [preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
@@ -19,7 +20,7 @@ export default function BlogManager(){
   if(!r.ok)throw Error(typeof j.error==="string"?j.error:"Request failed");return j;
  }
  async function check(){
-  try{const j=await request("/api/blog-admin/session");setReady(Boolean(j.configured));setSignedIn(Boolean(j.signedIn));if(j.signedIn)await load();}catch(e){setError(e instanceof Error?e.message:"Cannot connect")}
+  try{const j=await request("/api/blog-admin/session");setReady(Boolean(j.configured));setSignedIn(Boolean(j.signedIn));setSetup(j.setup && typeof j.setup==="object"?j.setup as Record<string,string>:null);if(j.signedIn)await load();}catch(e){setError(e instanceof Error?e.message:"Cannot connect")}
  }
  useEffect(()=>{void check()},[]);
  async function load(){
@@ -54,7 +55,11 @@ export default function BlogManager(){
   {error&&<p role="alert" style={{padding:15,background:"#ffe2e0",borderRadius:10,color:"#9a2525"}}>{error}</p>}
   {message&&<p role="status" style={{padding:15,background:"#e0f2e4",borderRadius:10}}>{message}</p>}
   {ready===null?<section style={panel}>Checking editor access…</section>:
-   !ready?<section style={panel}><h2>Blog editor setup required</h2><p>Blog management is not enabled for this deployment. Configure the Neon migration, editor password hash and session secret following the private setup guide. Public articles remain available.</p></section>:
+   !ready?<section style={panel}><h2>Blog editor setup required</h2><p>Blog management is not enabled for this deployment. Public articles remain available. In Preview, the diagnostics below identify what this deployment can recognise, without exposing credentials.</p>
+    {setup?<div style={{padding:16,background:"#f5f8f5",borderRadius:10}}>
+     {Object.entries(setup).map(([key,value])=><p key={key} style={{margin:"8px 0"}}><strong>{key.replace(/([A-Z])/g," $1")}:</strong> {value}</p>)}
+    </div>:<p>Check that all four environment variables are scoped to this exact Preview Git branch, then redeploy.</p>}
+    </section>:
    !signedIn?<section style={{...panel,maxWidth:500}}><LockKeyhole size={28}/><h2>Editor sign-in</h2><form onSubmit={submitPassword}>
      <label htmlFor="blog-password" style={label}>Blog editor password</label>
      <input id="blog-password" type="password" autoComplete="current-password" required minLength={12} style={control} value={password} onChange={e=>setPassword(e.target.value)}/>
