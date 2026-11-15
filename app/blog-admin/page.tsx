@@ -3,6 +3,7 @@ import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
 import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2,Sparkles} from "lucide-react";
 
+type AiArticle={title:string;slug:string;excerpt:string;body:string};
 type Post={id:number;slug:string;title:string;excerpt:string;body:string;status:"draft"|"published"|"archived";updated_at:string};
 const control={width:"100%",padding:"12px 14px",border:"1px solid #bccac2",borderRadius:10,font:"inherit",boxSizing:"border-box" as const};
 const button={background:"#234b3f",color:"white",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",fontWeight:700} as const;
@@ -16,16 +17,18 @@ export default function BlogManager(){
  const [title,setTitle]=useState(""),[slug,setSlug]=useState(""),[excerpt,setExcerpt]=useState(""),[body,setBody]=useState("");
  const [preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const [aiTopic,setAiTopic]=useState(""),[aiTone,setAiTone]=useState("Warm and reflective"),[aiLength,setAiLength]=useState("medium"),[aiBusy,setAiBusy]=useState(false);
- const [aiSuggestion,setAiSuggestion]=useState(""),[aiConfigured,setAiConfigured]=useState<boolean|null>(null);
+ const [aiSuggestion,setAiSuggestion]=useState<AiArticle|null>(null),[aiConfigured,setAiConfigured]=useState<boolean|null>(null);
  async function checkAI(){
   try{const j=await request("/api/blog-admin/ai");setAiConfigured(Boolean(j.configured));}catch{setAiConfigured(false)}
  }
  async function aiWrite(action:"draft"|"improve"|"expand"|"shorten"|"seo"){
-  setAiBusy(true);setError("");setMessage("");setAiSuggestion("");
+  setAiBusy(true);setError("");setMessage("");setAiSuggestion(null);
   try{
    const j=await request("/api/blog-admin/ai",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({action,topic:aiTopic||title,current:body,tone:aiTone,length:aiLength})});
-   setAiSuggestion(String(j.text||""));setMessage("AI suggestion is ready for review. It has not changed your saved article.");
+    body:JSON.stringify({action,topic:aiTopic||title,current:body,title,excerpt,tone:aiTone,length:aiLength})});
+   const draft=j.article as AiArticle;
+   if(!draft||!draft.title||!draft.slug||!draft.excerpt||!draft.body)throw Error("AI did not return the complete article and metadata");
+   setAiSuggestion(draft);setMessage("AI prepared your title, URL, SEO description and article. Review everything before applying.");
   }catch(e){setError(e instanceof Error?e.message:"AI writing failed")}finally{setAiBusy(false)}
  }
 
@@ -107,9 +110,22 @@ export default function BlogManager(){
        {aiBusy&&<p role="status">Writing your suggestion…</p>}
        {aiSuggestion&&<div style={{background:"white",padding:14,borderRadius:10,marginTop:16}}>
         <strong>AI suggestion (not yet saved)</strong>
-        <textarea style={{...control,marginTop:10}} rows={12} value={aiSuggestion} onChange={e=>setAiSuggestion(e.target.value)}/>
-        <p style={{fontSize:12,lineHeight:1.7}}>Review facts and Scripture references carefully. Copying this suggestion into the editor replaces the current unsaved article body, not the published post.</p>
-        <button type="button" style={button} onClick={()=>{if(!body.trim()||window.confirm("Replace the article body in the editor with this AI suggestion?")){setBody(aiSuggestion);setAiSuggestion("");setMessage("Suggestion moved into the editor. Save draft when you are happy with it.");}}}>Use this draft in editor</button>
+        <p style={{fontSize:12,lineHeight:1.6}}>Review and edit the generated details before applying. Changes here do not affect your saved article.</p>
+        <label htmlFor="ai-suggest-title" style={label}>Suggested title</label>
+        <input id="ai-suggest-title" style={control} maxLength={180} value={aiSuggestion.title} onChange={e=>setAiSuggestion({...aiSuggestion,title:e.target.value})}/>
+        <label htmlFor="ai-suggest-slug" style={label}>Suggested URL slug</label>
+        <input id="ai-suggest-slug" style={control} maxLength={120} value={aiSuggestion.slug} onChange={e=>setAiSuggestion({...aiSuggestion,slug:slugify(e.target.value)})}/>
+        <label htmlFor="ai-suggest-excerpt" style={label}>Suggested short SEO description</label>
+        <textarea id="ai-suggest-excerpt" style={control} rows={3} maxLength={300} value={aiSuggestion.excerpt} onChange={e=>setAiSuggestion({...aiSuggestion,excerpt:e.target.value})}/>
+        <label htmlFor="ai-suggest-body" style={label}>Suggested article</label>
+        <textarea id="ai-suggest-body" style={control} rows={12} value={aiSuggestion.body} onChange={e=>setAiSuggestion({...aiSuggestion,body:e.target.value})}/>
+        <p style={{fontSize:12,lineHeight:1.7}}>Please check all Bible references, factual claims, headings and metadata. Existing articles keep their current URL to avoid broken links.</p>
+        <button type="button" disabled={!aiSuggestion.title||!aiSuggestion.slug||!aiSuggestion.excerpt||aiSuggestion.body.length<50} style={button} onClick={()=>{
+          if(body.trim()&&!window.confirm("Replace the unsaved article fields with this AI suggestion?"))return;
+          setTitle(aiSuggestion.title);setExcerpt(aiSuggestion.excerpt);setBody(aiSuggestion.body);
+          if(!selected)setSlug(slugify(aiSuggestion.slug));
+          setAiSuggestion(null);setMessage("AI filled the title, SEO description and article"+(selected?" (existing URL preserved)":" and URL slug")+". Review and click Save draft.");
+        }}>Apply title, SEO and article to editor</button>
        </div>}
      </div>
      <label htmlFor="blog-title" style={label}>Title</label>
