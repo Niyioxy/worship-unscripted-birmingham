@@ -10,6 +10,18 @@ export function blogDb() {
   pool ??= new Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
   return pool;
 }
+export function blogSetupStatus() {
+  const hash = (process.env.BLOG_ADMIN_PASSWORD_HASH || "").trim();
+  const parts = hash.split(":");
+  const saltValid = parts.length === 2 && /^[a-f0-9]{32,128}$/i.test(parts[0] || "");
+  const digestValid = parts.length === 2 && /^[a-f0-9]{128}$/i.test(parts[1] || "");
+  return {
+    database: process.env.DATABASE_URL ? "ready" : "missing",
+    sessionSecret: (process.env.BLOG_SESSION_SECRET || "").length >= 32 ? "ready" : "missing_or_too_short",
+    passwordHash: saltValid && digestValid ? "ready" : (hash ? "incorrect_format" : "missing"),
+    cms: process.env.BLOG_CMS_ENABLED === "true" ? "enabled" : "disabled",
+  };
+}
 export function blogAuthReady() {
   const hash = process.env.BLOG_ADMIN_PASSWORD_HASH || "";
   const [salt, digest] = hash.split(":");
