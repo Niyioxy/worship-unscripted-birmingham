@@ -30,7 +30,7 @@ export async function POST(req:NextRequest){
   if(action==="save"){
    if(!validSlug(slug)||!title||title.length>180||excerpt.length>300||body.length<50||body.length>40000)return blogReply({error:"Invalid draft fields"},400);
    const r=await db.query(`UPDATE public.wu_blog_posts SET title=$2,slug=$3,excerpt=$4,body=$5,updated_at=now()
-     WHERE id=$1 AND status IN ('draft','published') RETURNING id`,[id,title,slug,excerpt,body]);
+     WHERE id=$1 AND status='draft' RETURNING id`,[id,title,slug,excerpt,body]);
    if(!r.rowCount)return blogReply({error:"Article is archived or missing"},409);
    return blogReply({ok:true});
   }
