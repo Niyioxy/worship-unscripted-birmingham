@@ -81,3 +81,17 @@ Paste the secret securely into Vercel as `BLOG_SESSION_SECRET`.
 
 ## Preview redeploy after configuration
 On 15 November 2026 the project owner confirmed migration 008 and 009, plus all four required Vercel Preview environment variables. This documentation-only commit triggers a fresh Git-connected Preview build to read the updated environment. No secret values are stored here, and Production is untouched. Verify the editor sign-in and post workflow before enabling the CMS in Production.
+
+## Optional AI Writing Assistant (direct OpenAI API, not Vercel AI Gateway)
+The editor now contains a separate AI Writing Assistant. It can draft a new worship article from a topic, improve a draft, expand, shorten, or suggest SEO-friendly revisions. The editor reviews the suggested text before selecting **Use this draft in editor**, then saves or publishes it manually. AI never publishes automatically, never changes an article without explicit editorial action, and cannot edit a currently published or archived article.
+
+To enable the AI feature on the `feature/self-service-blog-manager` **Preview** branch:
+1. Apply `db/migrations/010_blog_ai_usage.sql` to the **same Neon Preview database** as migrations 008 and 009 (adds an AI request counter only).
+2. Create an OpenAI Platform API key at https://platform.openai.com/api-keys under an account with separately configured API billing. A ChatGPT subscription does not automatically provide API billing.
+3. In Vercel project environment variables, add `BLOG_OPENAI_API_KEY` with the new secret key, target **Preview**, restricted to `feature/self-service-blog-manager`. Never paste this key in chat, GitHub or screenshots.
+4. Optional: set `BLOG_AI_MODEL` to an accessible text-generation model (default: `gpt-6-luna`). Model availability is account-dependent. Never confuse this variable with `JUDAH_MODEL`.
+5. Redeploy the **Preview** of this specific branch, not the live Production site, then sign in at `/blog-admin`.
+
+Safety and limits: writing calls require existing Blog Manager authentication and same-origin protection; the API key stays server-side; AI outputs are plain text, editable and manually approved; API responses are not automatically published. The Neon throttle allows at most 15 AI requests per hour per editor fingerprint. Also set an API usage budget/limits in OpenAI Platform to control spending. The feature does not connect to the previously blocked Vercel AI Gateway and will not work until a valid separately billed key is configured.
+
+Recommended Preview check: draft a short article from a harmless topic, review the suggestion, copy it into a new draft, save, then sign out and confirm it is not visible publicly until manually published. Verify generated biblical references and facts before publication.
