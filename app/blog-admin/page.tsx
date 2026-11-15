@@ -60,7 +60,7 @@ export default function BlogManager(){
      <input id="blog-password" type="password" autoComplete="current-password" required minLength={12} style={control} value={password} onChange={e=>setPassword(e.target.value)}/>
      <p><button disabled={busy} style={button}>{busy?"Checking…":"Sign in"}</button></p>
     </form></section>:
-   <div style={{display:"grid",gridTemplateColumns:"minmax(230px,1fr) minmax(0,2.2fr)",gap:20,alignItems:"start"}}>
+   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,330px),1fr))",gap:20,alignItems:"start"}}>
     <aside style={panel}>
      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}><h2 style={{margin:0,fontSize:21}}>Your articles</h2><button onClick={fresh} style={button}><FilePlus2 size={15} style={{display:"inline",verticalAlign:"middle"}}/> New</button></div>
      <div style={{marginTop:20}}>{posts.length?posts.map(p=><button key={p.id} onClick={()=>edit(p)} style={{display:"block",width:"100%",textAlign:"left",background:selected===p.id?"#e4eee7":"transparent",color:"#19342c",border:"1px solid #e3e9e2",borderRadius:9,padding:12,marginBottom:9,cursor:"pointer"}}>
