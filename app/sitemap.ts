@@ -18,6 +18,8 @@ const pages: { path: string; priority: number; frequency: "weekly" | "monthly" }
   { path: "/blog/why-worship-unscripted-birmingham-exists", priority: 0.8, frequency: "monthly" }
 ];
 
+export const dynamic="force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages=pages.map(page=>({
     url:SITE_URL+page.path,
