@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
-import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2} from "lucide-react";
+import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2,Sparkles} from "lucide-react";
 
 type Post={id:number;slug:string;title:string;excerpt:string;body:string;status:"draft"|"published"|"archived";updated_at:string};
 const control={width:"100%",padding:"12px 14px",border:"1px solid #bccac2",borderRadius:10,font:"inherit",boxSizing:"border-box" as const};
@@ -15,12 +15,26 @@ export default function BlogManager(){
  const [posts,setPosts]=useState<Post[]>([]),[selected,setSelected]=useState<number|null>(null);
  const [title,setTitle]=useState(""),[slug,setSlug]=useState(""),[excerpt,setExcerpt]=useState(""),[body,setBody]=useState("");
  const [preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
+ const [aiTopic,setAiTopic]=useState(""),[aiTone,setAiTone]=useState("Warm and reflective"),[aiLength,setAiLength]=useState("medium"),[aiBusy,setAiBusy]=useState(false);
+ const [aiSuggestion,setAiSuggestion]=useState(""),[aiConfigured,setAiConfigured]=useState<boolean|null>(null);
+ async function checkAI(){
+  try{const j=await request("/api/blog-admin/ai");setAiConfigured(Boolean(j.configured));}catch{setAiConfigured(false)}
+ }
+ async function aiWrite(action:"draft"|"improve"|"expand"|"shorten"|"seo"){
+  setAiBusy(true);setError("");setMessage("");setAiSuggestion("");
+  try{
+   const j=await request("/api/blog-admin/ai",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action,topic:aiTopic||title,current:body,tone:aiTone,length:aiLength})});
+   setAiSuggestion(String(j.text||""));setMessage("AI suggestion is ready for review. It has not changed your saved article.");
+  }catch(e){setError(e instanceof Error?e.message:"AI writing failed")}finally{setAiBusy(false)}
+ }
+
  async function request(url:string,options?:RequestInit){
   const r=await fetch(url,{cache:"no-store",...options});const j=await r.json() as Record<string,unknown>;
   if(!r.ok)throw Error(typeof j.error==="string"?j.error:"Request failed");return j;
  }
  async function check(){
-  try{const j=await request("/api/blog-admin/session");setReady(Boolean(j.configured));setSignedIn(Boolean(j.signedIn));setSetup(j.setup && typeof j.setup==="object"?j.setup as Record<string,string>:null);if(j.signedIn)await load();}catch(e){setError(e instanceof Error?e.message:"Cannot connect")}
+  try{const j=await request("/api/blog-admin/session");setReady(Boolean(j.configured));setSignedIn(Boolean(j.signedIn));setSetup(j.setup && typeof j.setup==="object"?j.setup as Record<string,string>:null);if(j.signedIn){await load();await checkAI();}}catch(e){setError(e instanceof Error?e.message:"Cannot connect")}
  }
  useEffect(()=>{void check()},[]);
  async function load(){
@@ -28,7 +42,7 @@ export default function BlogManager(){
  }
  async function submitPassword(e:FormEvent){
   e.preventDefault();setBusy(true);setError("");
-  try{await request("/api/blog-admin/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});setPassword("");setSignedIn(true);await load();}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}
+  try{await request("/api/blog-admin/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});setPassword("");setSignedIn(true);await load();await checkAI();}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}
  }
  function edit(p:Post){setSelected(p.id);setTitle(p.title);setSlug(p.slug);setExcerpt(p.excerpt);setBody(p.body);setPreview(false);setMessage("");setError("")}
  function fresh(){setSelected(null);setTitle("");setSlug("");setExcerpt("");setBody("");setPreview(false);setMessage("");setError("")}
@@ -76,6 +90,28 @@ export default function BlogManager(){
     <section style={panel}>
      <h2 style={{margin:"0 0 4px"}}>{selected?"Edit article":"Create article"}</h2>
      <p style={{fontSize:13,color:"#4d6258"}}>{isPublished?"Published article: unpublish before making changes.":current?.status==="archived"?"Archived articles are read-only.":"Work on a private draft, then publish when ready."}</p>
+     <div style={{margin:"24px 0",border:"1px solid #d9cfb7",background:"#fbf8ed",borderRadius:14,padding:20}}>
+       <h3 style={{display:"flex",alignItems:"center",gap:9,margin:"0 0 8px",fontSize:21}}><Sparkles size={21}/> AI Writing Assistant</h3>
+       <p style={{fontSize:13,lineHeight:1.7}}>Generate a new worship article or improve the text you've written. The assistant never saves or publishes without your approval.</p>
+       {aiConfigured===false&&<p style={{fontSize:13,color:"#8a4926"}}>AI is not connected yet. Add BLOG_OPENAI_API_KEY to the Preview branch and redeploy. This is separate from Vercel AI Gateway.</p>}
+       <label htmlFor="ai-topic" style={label}>What should we write about?</label>
+       <textarea id="ai-topic" rows={2} maxLength={500} value={aiTopic} onChange={e=>setAiTopic(e.target.value)} disabled={aiBusy||isPublished||current?.status==="archived"} placeholder="E.g. Why genuine worship matters more than performance" style={control}/>
+       <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+         <div style={{flex:"1 1 190px"}}><label htmlFor="ai-tone" style={label}>Writing style</label><select id="ai-tone" style={control} value={aiTone} onChange={e=>setAiTone(e.target.value)}><option>Warm and reflective</option><option>Biblical teaching</option><option>Encouraging and conversational</option><option>Practical and informative</option></select></div>
+         <div style={{flex:"1 1 150px"}}><label htmlFor="ai-length" style={label}>Length</label><select id="ai-length" style={control} value={aiLength} onChange={e=>setAiLength(e.target.value)}><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option></select></div>
+       </div>
+       <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:18}}>
+        <button type="button" style={button} disabled={aiBusy||busy||isPublished||current?.status==="archived"||!(aiTopic||title)} onClick={()=>void aiWrite("draft")}><Sparkles size={15} style={{display:"inline",verticalAlign:"middle"}}/> Generate article</button>
+        {(["improve","expand","shorten","seo"] as const).map(action=><button type="button" key={action} style={{...button,background:"#6e756b"}} disabled={aiBusy||busy||isPublished||current?.status==="archived"||body.length<40} onClick={()=>void aiWrite(action)}>{action==="seo"?"Improve SEO":action[0].toUpperCase()+action.slice(1)}</button>)}
+       </div>
+       {aiBusy&&<p role="status">Writing your suggestion…</p>}
+       {aiSuggestion&&<div style={{background:"white",padding:14,borderRadius:10,marginTop:16}}>
+        <strong>AI suggestion (not yet saved)</strong>
+        <textarea style={{...control,marginTop:10}} rows={12} value={aiSuggestion} onChange={e=>setAiSuggestion(e.target.value)}/>
+        <p style={{fontSize:12,lineHeight:1.7}}>Review facts and Scripture references carefully. Copying this suggestion into the editor replaces the current unsaved article body, not the published post.</p>
+        <button type="button" style={button} onClick={()=>{if(!body.trim()||window.confirm("Replace the article body in the editor with this AI suggestion?")){setBody(aiSuggestion);setAiSuggestion("");setMessage("Suggestion moved into the editor. Save draft when you are happy with it.");}}}>Use this draft in editor</button>
+       </div>}
+     </div>
      <label htmlFor="blog-title" style={label}>Title</label>
      <input id="blog-title" maxLength={180} disabled={isPublished||current?.status==="archived"} style={control} value={title} onChange={e=>{setTitle(e.target.value);if(!selected)setSlug(slugify(e.target.value))}}/>
      <label htmlFor="blog-slug" style={label}>URL slug</label>
