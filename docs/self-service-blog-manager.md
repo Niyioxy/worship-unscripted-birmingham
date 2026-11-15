@@ -78,3 +78,6 @@ Paste the secret securely into Vercel as `BLOG_SESSION_SECRET`.
 - Publishing is immediate once configured and approved.
 - Does not add a public editor navigation link, to avoid confusing ordinary visitors.
 - Production deploy requires appropriate Vercel permission; a passing GitHub check or Preview does not mean production is published.
+
+## Preview redeploy after configuration
+On 15 November 2026 the project owner confirmed migration 008 and 009, plus all four required Vercel Preview environment variables. This documentation-only commit triggers a fresh Git-connected Preview build to read the updated environment. No secret values are stored here, and Production is untouched. Verify the editor sign-in and post workflow before enabling the CMS in Production.
