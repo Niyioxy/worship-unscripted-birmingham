@@ -1,3 +1,4 @@
+import {DEFAULT_BLOG_COVER,DEFAULT_BLOG_COVER_ALT,safeBlogCover} from "@/lib/blog-cover";
 import type { Metadata } from "next";
 import Link from "next/link";
 import InnerPage from "../../inner-page";
@@ -5,22 +6,23 @@ import { notFound } from "next/navigation";
 import { blogDb } from "@/lib/blog-manager";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-type Managed = {title:string;excerpt:string;body:string;status:string};
+type Managed = {title:string;excerpt:string;body:string;status:string;cover_image_url:string|null;cover_image_alt:string};
 async function managedFirst():Promise<Managed|null>{
  if(process.env.BLOG_CMS_ENABLED!=="true"||!process.env.DATABASE_URL)return null;
  try{
-  const r=await blogDb().query("SELECT title,excerpt,body,status FROM public.wu_blog_posts WHERE slug=$1",["why-worship-unscripted-birmingham-exists"]);
+  const r=await blogDb().query("SELECT title,excerpt,body,status,cover_image_url,cover_image_alt FROM public.wu_blog_posts WHERE slug=$1",["why-worship-unscripted-birmingham-exists"]);
   return r.rows[0]||null;
  }catch{return null}
 }
 export async function generateMetadata():Promise<Metadata>{
  const managed=await managedFirst();
  const title=managed?.title||"Why Worship Unscripted Birmingham Exists";
+ const coverImage=safeBlogCover(managed?.cover_image_url)||DEFAULT_BLOG_COVER;
  const description=managed?.excerpt||"Discover the heart behind Worship Unscripted Birmingham, a Christ-centred vision for authentic worship, prayer, unity and fellowship across churches.";
  return {title,description,alternates:{canonical:"/blog/why-worship-unscripted-birmingham-exists"},
   robots:managed&&managed.status!=="published"?{index:false,follow:false}:{index:true,follow:true},
-  openGraph:{type:"article",title,description,url:"/blog/why-worship-unscripted-birmingham-exists"},
-  twitter:{card:"summary_large_image",title,description}};
+  openGraph:{type:"article",title,description,url:"/blog/why-worship-unscripted-birmingham-exists",images:[{url:coverImage,alt:managed?.cover_image_alt||DEFAULT_BLOG_COVER_ALT}]},
+  twitter:{card:"summary_large_image",title,description,images:[coverImage]}};
 }
 export default async function FirstReflection(){
  const managed=await managedFirst();
@@ -29,6 +31,7 @@ export default async function FirstReflection(){
   const paragraphs=managed.body.split(/\n\s*\n/).filter(Boolean);
   return <InnerPage eyebrow="JOURNAL / OUR VISION" title={managed.title} accent="" description={managed.excerpt||"A reflection on faith, worship and Christian community."}>
    <article className="inner-section"><div className="wrap" style={{maxWidth:800}}>
+    <img src={safeBlogCover(managed.cover_image_url)||DEFAULT_BLOG_COVER} alt={managed.cover_image_alt||DEFAULT_BLOG_COVER_ALT} style={{display:"block",width:"100%",height:"auto",maxHeight:420,objectFit:"cover",borderRadius:16,marginBottom:30}}/>
     <p className="kicker">WORSHIP • PRAYER • FELLOWSHIP</p>
     {paragraphs.map((p,i)=>p.startsWith("## ")?<h2 key={i} style={{fontSize:"clamp(24px,3vw,32px)",margin:"48px 0 20px"}}>{p.slice(3)}</h2>:<p key={i} style={{fontSize:"clamp(16px,1.7vw,18px)",lineHeight:1.9,margin:"0 0 22px",whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{p}</p>)}
     <p style={{marginTop:42,borderTop:"1px solid #d4d0c6",paddingTop:20}}><Link href="/blog" style={{color:"#345c4d",fontWeight:700}}>← All worship reflections</Link></p>
@@ -36,10 +39,12 @@ export default async function FirstReflection(){
   </InnerPage>;
  }
 
+ const fallbackCover=DEFAULT_BLOG_COVER;
  const copy={fontSize:"clamp(16px,1.7vw,18px)",lineHeight:1.9,margin:"0 0 22px"} as const;
  const section={fontSize:"clamp(24px,3vw,32px)",margin:"48px 0 20px",lineHeight:1.25} as const;
  return <InnerPage eyebrow="JOURNAL / OUR VISION" title="Why Worship Unscripted" accent="Birmingham Exists." description="A reflection on authentic worship, Christian unity and the community we hope to build.">
    <article className="inner-section"><div className="wrap" style={{maxWidth:800}}>
+    <img src={fallbackCover} alt={DEFAULT_BLOG_COVER_ALT} style={{display:"block",width:"100%",height:"auto",maxHeight:420,objectFit:"cover",borderRadius:16,marginBottom:30}}/>
     <p className="kicker">WORSHIP • PRAYER • FELLOWSHIP</p>
     <p style={copy}>Worship is more than a programme on a calendar. It is a response to who God is, and it can shape how we pray, listen, live and treat one another.</p>
     <p style={copy}>Worship Unscripted Birmingham began with a simple vision: to make room for people from different churches, cultures and backgrounds to come together around Jesus Christ in authentic worship.</p>
