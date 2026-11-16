@@ -1,10 +1,11 @@
+import {BLOG_COVER_OPTIONS,DEFAULT_BLOG_COVER,DEFAULT_BLOG_COVER_ALT} from "@/lib/blog-cover";
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
 import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2,Sparkles} from "lucide-react";
 
 type AiArticle={title:string;slug:string;excerpt:string;body:string};
-type Post={id:number;slug:string;title:string;excerpt:string;body:string;status:"draft"|"published"|"archived";updated_at:string};
+type Post={id:number;slug:string;title:string;excerpt:string;body:string;cover_image_url:string|null;cover_image_alt:string;status:"draft"|"published"|"archived";updated_at:string};
 const control={width:"100%",padding:"12px 14px",border:"1px solid #bccac2",borderRadius:10,font:"inherit",boxSizing:"border-box" as const};
 const button={background:"#234b3f",color:"white",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",fontWeight:700} as const;
 const panel={background:"#fff",padding:"clamp(18px,4vw,30px)",borderRadius:17,border:"1px solid #e2e8e1"} as const;
@@ -15,6 +16,7 @@ export default function BlogManager(){
  const [setup,setSetup]=useState<Record<string,string>|null>(null);
  const [posts,setPosts]=useState<Post[]>([]),[selected,setSelected]=useState<number|null>(null);
  const [title,setTitle]=useState(""),[slug,setSlug]=useState(""),[excerpt,setExcerpt]=useState(""),[body,setBody]=useState("");
+ const [coverImage,setCoverImage]=useState(""),[coverAlt,setCoverAlt]=useState("");
  const [preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const [aiTopic,setAiTopic]=useState(""),[aiTone,setAiTone]=useState("Warm and reflective"),[aiLength,setAiLength]=useState("medium"),[aiBusy,setAiBusy]=useState(false);
  const [aiSuggestion,setAiSuggestion]=useState<AiArticle|null>(null),[aiConfigured,setAiConfigured]=useState<boolean|null>(null);
@@ -47,12 +49,12 @@ export default function BlogManager(){
   e.preventDefault();setBusy(true);setError("");
   try{await request("/api/blog-admin/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});setPassword("");setSignedIn(true);await load();await checkAI();}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}
  }
- function edit(p:Post){setSelected(p.id);setTitle(p.title);setSlug(p.slug);setExcerpt(p.excerpt);setBody(p.body);setPreview(false);setMessage("");setError("")}
- function fresh(){setSelected(null);setTitle("");setSlug("");setExcerpt("");setBody("");setPreview(false);setMessage("");setError("")}
+ function edit(p:Post){setSelected(p.id);setTitle(p.title);setSlug(p.slug);setExcerpt(p.excerpt);setBody(p.body);setCoverImage(p.cover_image_url||"");setCoverAlt(p.cover_image_alt||"");setPreview(false);setMessage("");setError("")}
+ function fresh(){setSelected(null);setTitle("");setSlug("");setExcerpt("");setBody("");setCoverImage("");setCoverAlt("");setPreview(false);setMessage("");setError("")}
  async function write(action:string){
   setBusy(true);setError("");setMessage("");
   try{
-   const payload={action,id:selected,title,slug,excerpt,body};
+   const payload={action,id:selected,title,slug,excerpt,body,cover_image_url:coverImage,cover_image_alt:coverAlt};
    const result=await request("/api/blog-admin/posts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
    setMessage(action==="publish"?"Published!":action==="unpublish"?"Unpublished.":"Saved successfully");
    await load();
@@ -127,6 +129,26 @@ export default function BlogManager(){
           setAiSuggestion(null);setMessage("AI filled the title, SEO description and article"+(selected?" (existing URL preserved)":" and URL slug")+". Review and click Save draft.");
         }}>Apply title, SEO and article to editor</button>
        </div>}
+     </div>
+     <div style={{margin:"22px 0",border:"1px solid #d9e2d9",borderRadius:12,padding:18,background:"#f8fbf8"}}>
+      <h3 style={{fontSize:19,margin:"0 0 6px"}}>Article cover image</h3>
+      <p style={{fontSize:13,lineHeight:1.7}}>Select an approved image or supply a properly licensed direct HTTPS image URL. Use an image that genuinely represents the article, not an unrelated photograph.</p>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+       {BLOG_COVER_OPTIONS.map(item=><button key={item.url} type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage(item.url);setCoverAlt(item.alt)}} style={{border:coverImage===item.url?"2px solid #234b3f":"1px solid #c3cbbf",borderRadius:9,background:"white",padding:9,cursor:"pointer",width:155,textAlign:"left",color:"inherit"}}>
+        <img src={item.url} alt={item.alt} loading="lazy" style={{width:"100%",height:84,objectFit:"cover",borderRadius:7,display:"block"}}/>
+        <span style={{display:"block",fontSize:12,marginTop:7}}>{item.label}</span>
+       </button>)}
+       <button type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage("");setCoverAlt("")}} style={{border:"1px solid #c3cbbf",borderRadius:9,background:"white",padding:12,height:"fit-content",cursor:"pointer"}}>Use default cover</button>
+      </div>
+      <label htmlFor="blog-cover-url" style={label}>Custom image URL (optional)</label>
+      <input id="blog-cover-url" type="url" placeholder="https://example.com/licensed-image.jpg" disabled={isPublished||current?.status==="archived"} style={control} value={coverImage.startsWith("/")?"":coverImage} onChange={e=>setCoverImage(e.target.value)}/>
+      {coverImage.startsWith("/")&&<p style={{fontSize:12}}>Selected built-in asset: {coverImage}</p>}
+      <label htmlFor="blog-cover-alt" style={label}>Describe the image for accessibility</label>
+      <input id="blog-cover-alt" maxLength={220} disabled={isPublished||current?.status==="archived"} style={control} value={coverAlt} onChange={e=>setCoverAlt(e.target.value)} placeholder="e.g. A small group worshipping together in a studio"/>
+      <div style={{marginTop:15,overflow:"hidden",borderRadius:12,background:"#e9e6dd"}}>
+       <img src={coverImage||DEFAULT_BLOG_COVER} alt={coverAlt||DEFAULT_BLOG_COVER_ALT} onError={e=>{e.currentTarget.src=DEFAULT_BLOG_COVER;}} style={{display:"block",width:"100%",maxHeight:280,objectFit:"cover"}}/>
+      </div>
+      <p style={{fontSize:12,lineHeight:1.6,color:"#53635a"}}>External images must be yours or licensed for use. Avoid private photos or hotlinked images that you do not have permission to publish. A built-in image is shown when no cover is selected.</p>
      </div>
      <label htmlFor="blog-title" style={label}>Title</label>
      <input id="blog-title" maxLength={180} disabled={isPublished||current?.status==="archived"} style={control} value={title} onChange={e=>{setTitle(e.target.value);if(!selected)setSlug(slugify(e.target.value))}}/>
