@@ -1,5 +1,5 @@
-import {BLOG_COVER_OPTIONS,DEFAULT_BLOG_COVER,DEFAULT_BLOG_COVER_ALT} from "@/lib/blog-cover";
 "use client";
+import {BLOG_COVER_OPTIONS,DEFAULT_BLOG_COVER,DEFAULT_BLOG_COVER_ALT} from "@/lib/blog-cover";
 import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
 import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2,Sparkles} from "lucide-react";
