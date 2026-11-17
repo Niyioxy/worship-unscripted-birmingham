@@ -5,7 +5,8 @@ import Link from "next/link";
 import {ArrowLeft,BookOpenText,Check,ExternalLink,Eye,FilePlus2,LockKeyhole,LogOut,Save,Send,Undo2,Sparkles} from "lucide-react";
 
 type AiArticle={title:string;slug:string;excerpt:string;body:string};
-type Post={id:number;slug:string;title:string;excerpt:string;body:string;cover_image_url:string|null;cover_image_alt:string;status:"draft"|"published"|"archived";updated_at:string};
+type PexelsPhoto={id:number;preview:string;image:string;alt:string;photographer:string;source:string};
+type Post={id:number;cover_photo_credit:string;cover_photo_source:string|null;slug:string;title:string;excerpt:string;body:string;cover_image_url:string|null;cover_image_alt:string;status:"draft"|"published"|"archived";updated_at:string};
 const control={width:"100%",padding:"12px 14px",border:"1px solid #bccac2",borderRadius:10,font:"inherit",boxSizing:"border-box" as const};
 const button={background:"#234b3f",color:"white",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",fontWeight:700} as const;
 const panel={background:"#fff",padding:"clamp(18px,4vw,30px)",borderRadius:17,border:"1px solid #e2e8e1"} as const;
@@ -17,6 +18,25 @@ export default function BlogManager(){
  const [posts,setPosts]=useState<Post[]>([]),[selected,setSelected]=useState<number|null>(null);
  const [title,setTitle]=useState(""),[slug,setSlug]=useState(""),[excerpt,setExcerpt]=useState(""),[body,setBody]=useState("");
  const [coverImage,setCoverImage]=useState(""),[coverAlt,setCoverAlt]=useState("");
+ const [photoCredit,setPhotoCredit]=useState(""),[photoSource,setPhotoSource]=useState("");
+ const [photoQuery,setPhotoQuery]=useState(""),[photoMatches,setPhotoMatches]=useState<PexelsPhoto[]>([]),[photoBusy,setPhotoBusy]=useState(false),[photoError,setPhotoError]=useState("");
+ async function findPhotos(){
+  const q=(photoQuery.trim()||title.trim()||aiTopic.trim());
+  if(q.length<3){setPhotoError("Enter an image search phrase first.");return}
+  setPhotoBusy(true);setPhotoError("");setPhotoMatches([]);
+  try{
+   const result=await request("/api/blog-admin/photos?q="+encodeURIComponent(q));
+   setPhotoMatches((result.photos||[]) as PexelsPhoto[]);
+   if(result.error)setPhotoError(String(result.error));
+   if(!((result.photos as PexelsPhoto[]||[]).length)&&!result.error)setPhotoError("No matching landscape photographs found. Try simpler terms.");
+  }catch(e){setPhotoError(e instanceof Error?e.message:"Photo search failed")}finally{setPhotoBusy(false)}
+ }
+ function choosePexelsPhoto(photo:PexelsPhoto){
+  setCoverImage(photo.image);setCoverAlt(photo.alt.length>=8?photo.alt:"Stock photo by "+photo.photographer);
+  setPhotoCredit("Photo by "+photo.photographer+" on Pexels");setPhotoSource(photo.source);
+  setMessage("Selected a Pexels photograph. Review its relevance and click Save draft.");
+ }
+
  const [preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const [aiTopic,setAiTopic]=useState(""),[aiTone,setAiTone]=useState("Warm and reflective"),[aiLength,setAiLength]=useState("medium"),[aiBusy,setAiBusy]=useState(false);
  const [aiSuggestion,setAiSuggestion]=useState<AiArticle|null>(null),[aiConfigured,setAiConfigured]=useState<boolean|null>(null);
@@ -49,12 +69,12 @@ export default function BlogManager(){
   e.preventDefault();setBusy(true);setError("");
   try{await request("/api/blog-admin/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});setPassword("");setSignedIn(true);await load();await checkAI();}catch(e){setError(e instanceof Error?e.message:"Sign in failed")}finally{setBusy(false)}
  }
- function edit(p:Post){setSelected(p.id);setTitle(p.title);setSlug(p.slug);setExcerpt(p.excerpt);setBody(p.body);setCoverImage(p.cover_image_url||"");setCoverAlt(p.cover_image_alt||"");setPreview(false);setMessage("");setError("")}
- function fresh(){setSelected(null);setTitle("");setSlug("");setExcerpt("");setBody("");setCoverImage("");setCoverAlt("");setPreview(false);setMessage("");setError("")}
+ function edit(p:Post){setSelected(p.id);setTitle(p.title);setSlug(p.slug);setExcerpt(p.excerpt);setBody(p.body);setCoverImage(p.cover_image_url||"");setCoverAlt(p.cover_image_alt||"");setPhotoCredit(p.cover_photo_credit||"");setPhotoSource(p.cover_photo_source||"");setPhotoMatches([]);setPhotoError("");setPreview(false);setMessage("");setError("")}
+ function fresh(){setSelected(null);setTitle("");setSlug("");setExcerpt("");setBody("");setCoverImage("");setCoverAlt("");setPhotoCredit("");setPhotoSource("");setPhotoMatches([]);setPhotoError("");setPreview(false);setMessage("");setError("")}
  async function write(action:string){
   setBusy(true);setError("");setMessage("");
   try{
-   const payload={action,id:selected,title,slug,excerpt,body,cover_image_url:coverImage,cover_image_alt:coverAlt};
+   const payload={action,id:selected,title,slug,excerpt,body,cover_image_url:coverImage,cover_image_alt:coverAlt,cover_photo_credit:photoCredit,cover_photo_source:photoSource};
    const result=await request("/api/blog-admin/posts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
    setMessage(action==="publish"?"Published!":action==="unpublish"?"Unpublished.":"Saved successfully");
    await load();
@@ -134,15 +154,34 @@ export default function BlogManager(){
       <h3 style={{fontSize:19,margin:"0 0 6px"}}>Article cover image</h3>
       <p style={{fontSize:13,lineHeight:1.7}}>Select an approved image or supply a properly licensed direct HTTPS image URL. Use an image that genuinely represents the article, not an unrelated photograph.</p>
       <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-       {BLOG_COVER_OPTIONS.map(item=><button key={item.url} type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage(item.url);setCoverAlt(item.alt)}} style={{border:coverImage===item.url?"2px solid #234b3f":"1px solid #c3cbbf",borderRadius:9,background:"white",padding:9,cursor:"pointer",width:155,textAlign:"left",color:"inherit"}}>
+       {BLOG_COVER_OPTIONS.map(item=><button key={item.url} type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage(item.url);setCoverAlt(item.alt);setPhotoCredit("");setPhotoSource("")}} style={{border:coverImage===item.url?"2px solid #234b3f":"1px solid #c3cbbf",borderRadius:9,background:"white",padding:9,cursor:"pointer",width:155,textAlign:"left",color:"inherit"}}>
         <img src={item.url} alt={item.alt} loading="lazy" style={{width:"100%",height:84,objectFit:"cover",borderRadius:7,display:"block"}}/>
         <span style={{display:"block",fontSize:12,marginTop:7}}>{item.label}</span>
        </button>)}
-       <button type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage("");setCoverAlt("")}} style={{border:"1px solid #c3cbbf",borderRadius:9,background:"white",padding:12,height:"fit-content",cursor:"pointer"}}>Use default cover</button>
+       <button type="button" disabled={isPublished||current?.status==="archived"} onClick={()=>{setCoverImage("");setCoverAlt("");setPhotoCredit("");setPhotoSource("")}} style={{border:"1px solid #c3cbbf",borderRadius:9,background:"white",padding:12,height:"fit-content",cursor:"pointer"}}>Use default cover</button>
+      </div>
+      <div style={{background:"#eef4ee",border:"1px solid #d4dfd4",borderRadius:12,padding:14,marginTop:20}}>
+       <h4 style={{fontSize:17,margin:"0 0 6px"}}>Find matching photographs on Pexels</h4>
+       <p style={{fontSize:12,lineHeight:1.7,marginTop:0}}>Search by the topic of your article, then select a landscape photograph. Stock images must not imply they show an actual Worship Unscripted event.</p>
+       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <input aria-label="Search Pexels photos" style={{...control,flex:"1 1 180px",width:"auto"}} maxLength={100} placeholder="e.g. Christian worship singing together" value={photoQuery} onChange={e=>setPhotoQuery(e.target.value)} disabled={isPublished||current?.status==="archived"}/>
+        <button type="button" style={button} disabled={photoBusy||isPublished||current?.status==="archived"} onClick={()=>void findPhotos()}>{photoBusy?"Searching…":"Find photos"}</button>
+       </div>
+       {photoError&&<p role="status" style={{color:"#91532a",fontSize:13}}>{photoError}</p>}
+       {photoMatches.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginTop:15}}>
+        {photoMatches.map(photo=><div key={photo.id} style={{background:"white",border:"1px solid #dae3d9",padding:7,borderRadius:9}}>
+         <img src={photo.preview} alt={photo.alt} loading="lazy" style={{width:"100%",height:110,objectFit:"cover",borderRadius:6}}/>
+         <p style={{fontSize:11,margin:"6px 0"}}>{photo.photographer}</p>
+         <button type="button" disabled={isPublished||current?.status==="archived"} style={{...button,padding:"7px 10px",fontSize:12}} onClick={()=>choosePexelsPhoto(photo)}>Use this photo</button>
+         <a href={photo.source} target="_blank" rel="noopener noreferrer" style={{display:"block",fontSize:11,marginTop:6}}>View on Pexels</a>
+        </div>)}
+       </div>}
+       <p style={{fontSize:11,margin:"12px 0 0"}}>Photographs supplied by <a href="https://www.pexels.com/" target="_blank" rel="noopener noreferrer" style={{textDecoration:"underline"}}>Pexels</a>. Photographer/source credit is saved with the post.</p>
       </div>
       <label htmlFor="blog-cover-url" style={label}>Custom image URL (optional)</label>
-      <input id="blog-cover-url" type="url" placeholder="https://example.com/licensed-image.jpg" disabled={isPublished||current?.status==="archived"} style={control} value={coverImage.startsWith("/")?"":coverImage} onChange={e=>setCoverImage(e.target.value)}/>
+      <input id="blog-cover-url" type="url" placeholder="https://example.com/licensed-image.jpg" disabled={isPublished||current?.status==="archived"} style={control} value={coverImage.startsWith("/")?"":coverImage} onChange={e=>{setCoverImage(e.target.value);setPhotoCredit("");setPhotoSource("")}}/>
       {coverImage.startsWith("/")&&<p style={{fontSize:12}}>Selected built-in asset: {coverImage}</p>}
+      {photoSource&&<p style={{fontSize:12,marginTop:12}}>Selected Pexels image: <a href={photoSource} target="_blank" rel="noopener noreferrer" style={{textDecoration:"underline"}}>{photoCredit||"Photographer credit"}</a></p>}
       <label htmlFor="blog-cover-alt" style={label}>Describe the image for accessibility</label>
       <input id="blog-cover-alt" maxLength={220} disabled={isPublished||current?.status==="archived"} style={control} value={coverAlt} onChange={e=>setCoverAlt(e.target.value)} placeholder="e.g. A small group worshipping together in a studio"/>
       <div style={{marginTop:15,overflow:"hidden",borderRadius:12,background:"#e9e6dd"}}>
