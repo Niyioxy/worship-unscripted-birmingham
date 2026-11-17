@@ -6,11 +6,11 @@ import { notFound } from "next/navigation";
 import { blogDb } from "@/lib/blog-manager";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-type Managed = {title:string;excerpt:string;body:string;status:string;cover_image_url:string|null;cover_image_alt:string};
+type Managed = {title:string;excerpt:string;body:string;status:string;cover_image_url:string|null;cover_image_alt:string;cover_photo_credit:string;cover_photo_source:string|null};
 async function managedFirst():Promise<Managed|null>{
  if(process.env.BLOG_CMS_ENABLED!=="true"||!process.env.DATABASE_URL)return null;
  try{
-  const r=await blogDb().query("SELECT title,excerpt,body,status,cover_image_url,cover_image_alt FROM public.wu_blog_posts WHERE slug=$1",["why-worship-unscripted-birmingham-exists"]);
+  const r=await blogDb().query("SELECT title,excerpt,body,status,cover_image_url,cover_image_alt,cover_photo_credit,cover_photo_source FROM public.wu_blog_posts WHERE slug=$1",["why-worship-unscripted-birmingham-exists"]);
   return r.rows[0]||null;
  }catch{return null}
 }
@@ -31,7 +31,7 @@ export default async function FirstReflection(){
   const paragraphs=managed.body.split(/\n\s*\n/).filter(Boolean);
   return <InnerPage eyebrow="JOURNAL / OUR VISION" title={managed.title} accent="" description={managed.excerpt||"A reflection on faith, worship and Christian community."}>
    <article className="inner-section"><div className="wrap" style={{maxWidth:800}}>
-    <img src={safeBlogCover(managed.cover_image_url)||DEFAULT_BLOG_COVER} alt={managed.cover_image_alt||DEFAULT_BLOG_COVER_ALT} style={{display:"block",width:"100%",height:"auto",maxHeight:420,objectFit:"cover",borderRadius:16,marginBottom:30}}/>
+    <figure style={{margin:"0 0 30px"}}><img src={safeBlogCover(managed.cover_image_url)||DEFAULT_BLOG_COVER} alt={managed.cover_image_alt||DEFAULT_BLOG_COVER_ALT} style={{display:"block",width:"100%",height:"auto",maxHeight:420,objectFit:"cover",borderRadius:16,marginBottom:0}}/>{managed.cover_photo_source&&managed.cover_photo_credit&&<figcaption style={{fontSize:12,marginTop:8}}><a href={managed.cover_photo_source} target="_blank" rel="noopener noreferrer" style={{textDecoration:"underline"}}>{managed.cover_photo_credit}</a></figcaption>}</figure>
     <p className="kicker">WORSHIP • PRAYER • FELLOWSHIP</p>
     {paragraphs.map((p,i)=>p.startsWith("## ")?<h2 key={i} style={{fontSize:"clamp(24px,3vw,32px)",margin:"48px 0 20px"}}>{p.slice(3)}</h2>:<p key={i} style={{fontSize:"clamp(16px,1.7vw,18px)",lineHeight:1.9,margin:"0 0 22px",whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{p}</p>)}
     <p style={{marginTop:42,borderTop:"1px solid #d4d0c6",paddingTop:20}}><Link href="/blog" style={{color:"#345c4d",fontWeight:700}}>← All worship reflections</Link></p>
